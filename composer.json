@@ -1,0 +1,19 @@
+{
+    "name": "murean/orm-profiling",
+    "autoload": {
+        "psr-4": {
+            "Profiling\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Dev Murean",
+            "email": "dev.murean@gmail.com"
+        }
+    ],
+    "require": {
+        "leafs/leaf": "^3.2",
+        "illuminate/database": "^9.42",
+        "doctrine/orm": "^2.13"
+    }
+}
