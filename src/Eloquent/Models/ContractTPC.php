@@ -5,7 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ContractTPC extends Model
 {
-    protected $table = 'tpc_contract';
+    protected $table = 'contract_tpc';
     protected $fillable = [
         'tpc_employee_id',
         'contract_duration',

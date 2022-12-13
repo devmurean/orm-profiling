@@ -1,7 +1,9 @@
 <?php
 namespace App\Eloquent\Repositories;
 
+use App\Eloquent\Models\ContractTPC;
 use App\Eloquent\Models\EmployeeTPC;
+use App\Eloquent\Models\PermanentTPC;
 use App\Eloquent\Repositories\Repository;
 use Illuminate\Support\Facades\DB;
 
@@ -12,18 +14,27 @@ class PolymorphicTPCRepository extends Repository
     {
         try {
             DB::beginTransaction();
-            $selectedEmployeeType = array_rand(self::TYPES, 1);
+            $selectedEmployeeType = array_rand([
+                PermanentTPC::class,
+                ContractTPC::class
+            ], 1);
+
+            /** @var EmployeeTPC */
             $employee = EmployeeTPC::create([
-                'name' => 'Employee Name',
-                'address' => 'Employee Address',
+                'name' => $this->faker->name(),
+                'address' => $this->faker->address,
                 'type' => $selectedEmployeeType
             ]);
+
             $employee->employment()->create([
-                'nik' => 'Employee NIK',
-                'contract_duration' => 1
+                'nik' => rand(10**5, 10**6-1),
+                'contract_duration' => rand(1, 5)
             ]);
+
             DB::commit();
+
             $employee->refresh();
+
             return response()->json([
                 'employee' => $employee
             ]);
@@ -45,9 +56,12 @@ class PolymorphicTPCRepository extends Repository
         try {
             DB::beginTransaction();
             $employee = EmployeeTPC::inRandomOrder()->first();
-            $employee->fill(['name' => 'Updated Employee Name']);
+            $employee->fill(['name' => $this->faker->name]);
             $employee->saveOrFail();
-            $employee->employment()->fill(['nik' => '987654321', 'contract_duration' => 2]);
+            $employee->employment()->fill([
+                'nik' => rand(10**5, 10**6-1),
+                'contract_duration' => rand(1, 5)
+            ]);
             $employee->employment()->saveOrFail();
             DB::commit();
         } catch (\Throwable $th) {

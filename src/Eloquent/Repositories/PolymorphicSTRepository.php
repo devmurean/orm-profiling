@@ -6,38 +6,40 @@ use App\Eloquent\Repositories\Repository;
 
 class PolymorphicSTRepository extends Repository
 {
-    private const TYPES = ['permanent', 'contract'];
     public function createOperation()
     {
-        $selectedEmployeeType = array_rand(self::TYPES, 1);
+        $selectedEmployeeType = array_rand([
+            'permanent', 'contract'
+        ], 1);
+
         $fills = [
-            'name' => 'Employee Name',
-            'address' => 'Employee Address',
+            'name' => $this->faker->name,
+            'address' => $this->faker->address(),
+            'nik' => $selectedEmployeeType === 'permanent' ? rand(10000, 99999) : null,
+            'contract_duration' => $selectedEmployeeType === 'contract' ? rand(1, 5) : null
         ];
-        if ($selectedEmployeeType === 'permanent') {
-            $fills['nik'] = '123456789';
-        } else {
-            $fills['contract_duration'] = 1;
-        }
+
         $employee = EmployeeST::create($fills);
         return response()->json([ 'employee' => $employee ]);
     }
+
     public function readOperation()
     {
         $employees = EmployeeST::all();
         return response()->json([ 'employee' => $employees ]);
     }
+
     public function updateOperation()
     {
         try {
             /** @var EmployeeST */
             $employee = EmployeeST::inRandomOrder()->first();
             $employee->fill([
-                'name' => 'Updated Employee Name',
-                'address' => 'Updated Employee Address'
+                'name' => $this->faker->name,
+                'address' => $this->faker->address
             ]);
             $employee->saveOrFail();
-            return response()->json([ 'employee' => $employee ]);
+            return response()->json(['employee' => $employee]);
         } catch (\Throwable $th) {
             return response()->json(['employee' => $th->getMessage()]);
         }

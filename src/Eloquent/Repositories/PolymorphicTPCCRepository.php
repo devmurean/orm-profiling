@@ -15,10 +15,10 @@ class PolymorphicTPCCRepository extends Repository
             DB::beginTransaction();
             $data = [
                 'type' => array_rand(['permanent', 'contract'], 1),
-                'name' => 'Employee Name',
-                'address' => 'Employee Address',
-                'nik' => '123456789',
-                'contract_duration' => 1
+                'name' => $this->faker->name,
+                'address' => $this->faker->address,
+                'nik' => rand(10**5, 10**6-1),
+                'contract_duration' => rand(1, 5)
             ];
             $result = [
                 'employee' => EmployeeTPCC::create($data)
@@ -68,7 +68,7 @@ class PolymorphicTPCCRepository extends Repository
                 break;
         }
 
-        $object->name = 'Updated ' . $resource . ' Name';
+        $object->name = $this->faker->name;
         $object->saveOrFail();
         $result[$resource] = $object;
         return response()->json($result);

@@ -5,7 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class EmployeeTPCC extends Model
 {
-    protected $table = 'tpcc_employee';
+    protected $table = 'employee_tpcc';
     protected $fillable = [
         'name',
         'address',

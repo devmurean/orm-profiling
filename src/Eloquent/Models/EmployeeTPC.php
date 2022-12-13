@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class EmployeeTPC extends Model
 {
-    protected $table = 'tpc_employee';
+    protected $table = 'employee_tpc';
     protected $fillable = [
         'name',
         'address',
@@ -16,7 +16,7 @@ class EmployeeTPC extends Model
 
     public function employment(): HasOne
     {
-        return $this->type === 'permanent'
+        return $this->type === PermanentTPC::class
             ? $this->hasOne(PermanentTPC::class, 'tpc_employee_id')
             : $this->hasOne(ContractTPC::class, 'tpc_employee_id');
     }

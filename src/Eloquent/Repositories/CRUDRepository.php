@@ -8,7 +8,11 @@ class CRUDRepository extends Repository
 {
     public function createOperation()
     {
-        $user = User::create(['name' => 'asep']);
+        $user = User::create([
+            'name' => $this->faker->name,
+            'email' => $this->faker->uuid . '@example.com',
+            'password' => $this->faker->password()
+        ]);
         return response()->json([
             'user' => $user
         ]);
@@ -26,7 +30,7 @@ class CRUDRepository extends Repository
     {
         try {
             $user = User::inRandomOrder()->first();
-            $user->name = 'updated user name';
+            $user->name = $this->faker->name;
             $user->saveOrFail();
 
             return response()->json([

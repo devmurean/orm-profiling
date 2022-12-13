@@ -5,7 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class PermanentTPCC extends Model
 {
-    protected $table = 'tpcc_permanent';
+    protected $table = 'permanent_tpcc';
     protected $fillable = [
         'name',
         'address',

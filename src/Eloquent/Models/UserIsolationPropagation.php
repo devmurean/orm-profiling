@@ -3,13 +3,14 @@ namespace App\Eloquent\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ContractTPCC extends Model
+class UserIsolationPropagation extends Model
 {
-    protected $table = 'contract_tpcc';
+    public $table = 'user_isolation_propagations';
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
         'address',
-        'contract_duration'
+        'email'
     ];
     public $timestamps = false;
 }

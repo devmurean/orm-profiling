@@ -10,9 +10,11 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Model
 {
-    protected $table = 'user';
+    protected $table = 'users';
     protected $fillable = [
-        'name'
+        'name',
+        'email',
+        'password'
     ];
     public $timestamps = false;
 
