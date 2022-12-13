@@ -42,9 +42,9 @@ app()->group('/(doctrine|eloquent)/tpcc', ['namespace' => 'App\Controllers', fun
 
 // Propagation
 require "./src/Controllers/ProgationController.php";
-app()->post('/', 'ProgationController@invoke');
+app()->post('/propagation', 'ProgationController@invoke');
 // Isolation
 require "./src/Controllers/IsolationController.php";
-app()->post('/', 'IsolationController@invoke');
+app()->post('/isolation', 'IsolationController@invoke');
 
 app()->run();
