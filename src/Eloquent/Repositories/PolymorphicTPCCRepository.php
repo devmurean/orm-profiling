@@ -5,7 +5,7 @@ use App\Eloquent\Models\ContractTPCC;
 use App\Eloquent\Models\EmployeeTPCC;
 use App\Eloquent\Models\PermanentTPCC;
 use App\Eloquent\Repositories\Repository;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Capsule\Manager as DB;
 
 class PolymorphicTPCCRepository extends Repository
 {
@@ -37,7 +37,7 @@ class PolymorphicTPCCRepository extends Repository
     }
     public function readOperation()
     {
-        $resource = array_rand(['permanent', 'contract', 'employee'], 1);
+        $resource = $this->faker->randomElement(['permanent', 'contract', 'employee']);
         $result = [];
         switch ($resource) {
             case 'permanent':
@@ -54,8 +54,9 @@ class PolymorphicTPCCRepository extends Repository
     }
     public function updateOperation()
     {
-        $resource = array_rand(['permanent', 'contract', 'employee'], 1);
+        $resource = $this->faker->randomElement(['permanent', 'contract', 'employee']);
         $result = [];
+        $object = null;
         switch ($resource) {
             case 'permanent':
                 $object = PermanentTPCC::inRandomOrder()->first();
@@ -67,7 +68,6 @@ class PolymorphicTPCCRepository extends Repository
                 $object = EmployeeTPCC::inRandomOrder()->first();
                 break;
         }
-
         $object->name = $this->faker->name;
         $object->saveOrFail();
         $result[$resource] = $object;
@@ -75,7 +75,8 @@ class PolymorphicTPCCRepository extends Repository
     }
     public function deleteOperation()
     {
-        $resource = array_rand(['permanent', 'contract', 'employee'], 1);
+        $resource = $this->faker->randomElement(['permanent', 'contract', 'employee']);
+        $object = null;
         $result = [];
         switch ($resource) {
             case 'permanent':
@@ -94,8 +95,8 @@ class PolymorphicTPCCRepository extends Repository
     }
     public function lookupOperation()
     {
-        $resource = array_rand(['permanent', 'contract', 'employee'], 1);
-        $result = [];
+        $resource = $this->faker->randomElement(['permanent', 'contract', 'employee']);
+        $object = null;
         switch ($resource) {
             case 'permanent':
                 $object = PermanentTPCC::inRandomOrder()->first();

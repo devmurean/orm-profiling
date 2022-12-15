@@ -3,10 +3,11 @@ namespace App\Eloquent\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class EmployeeTPC extends Model
 {
-    protected $table = 'employee_tpc';
+    protected $table = 'eloquent_employee_tpc';
     protected $fillable = [
         'name',
         'address',
@@ -14,10 +15,8 @@ class EmployeeTPC extends Model
     ];
     public $timestamps = false;
 
-    public function employment(): HasOne
+    public function employment(): MorphTo
     {
-        return $this->type === PermanentTPC::class
-            ? $this->hasOne(PermanentTPC::class, 'tpc_employee_id')
-            : $this->hasOne(ContractTPC::class, 'tpc_employee_id');
+        return $this->morphTo('employment', 'type', 'id', 'employee_tpc_id');
     }
 }
