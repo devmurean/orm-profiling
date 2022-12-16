@@ -41,10 +41,10 @@ app()->group('/(doctrine|eloquent)/tpcc', ['namespace' => 'App\Controllers', fun
 }]);
 
 // Propagation
-require "./src/Controllers/ProgationController.php";
-app()->post('/(doctrine|eloquent)/propagation/(action)', 'ProgationController@invoke');
+require "./src/Controllers/PropagationController.php";
+app()->post('/(doctrine|eloquent)/propagation/(add|update|delete)', 'App\Controllers\PropagationController@invoke');
 // Isolation
 require "./src/Controllers/IsolationController.php";
-app()->post('/(doctrine|eloquent)/isolation/(action)', 'IsolationController@invoke');
+app()->post('/(doctrine|eloquent)/isolation/(add|update|delete)', 'App\Controllers\IsolationController@invoke');
 
 app()->run();

@@ -1,7 +1,7 @@
 <?php
 namespace App\Controllers;
 
-class ProgationController extends Controller
+class PropagationController extends Controller
 {
     private const METRIC = 'propagation';
     public function invoke($orm, $action)

@@ -2,7 +2,7 @@
 
 namespace App\Eloquent\Repositories;
 
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Capsule\Manager as DB;
 
 class PropagationRepository extends Repository
 {
@@ -12,7 +12,7 @@ class PropagationRepository extends Repository
         $result = DB::statement(
             'ALTER TABLE ' .
             self::TABLE .
-            ' ADD COLUMN additional_column INT NULL'
+            ' ADD COLUMN IF NOT EXISTS additional_column INT NULL'
         );
         return response()->json(['result' => $result]);
     }

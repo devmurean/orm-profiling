@@ -8,7 +8,7 @@ class IsolationController extends Controller
     {
         $object = $this->selectORM($orm, self::METRIC);
         switch ($action) {
-            case 'create':
+            case 'add':
                 return $object->createDatabase();
             case 'update':
                 return $object->alterDatabaseEncryption(array_rand([true, false], 1));
