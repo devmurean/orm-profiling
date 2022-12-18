@@ -12,7 +12,7 @@ class PropagationRepository extends Repository
         $result = DB::statement(
             'ALTER TABLE ' .
             self::TABLE .
-            ' ADD COLUMN IF NOT EXISTS additional_column INT NULL'
+            ' ADD COLUMN additional_column INT NULL'
         );
         return response()->json(['result' => $result]);
     }
