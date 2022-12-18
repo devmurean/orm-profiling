@@ -47,39 +47,29 @@ class User
         $this->tasks = new ArrayCollection();
         $this->roles = new ArrayCollection();
     }
-
-    public function getId(): int
+    
+    public function serialize(bool $withRelationship = false)
     {
-        return $this->id;
+        $base = [
+            'id' => $this->id,
+            'name' => $this->name,
+            'email' => $this->email,
+        ];
+
+        $relationships = $withRelationship ? [
+            'tasks' => $this->tasks(),
+            'roles' => $this->roles,
+            'desk' => $this->desk->serialize()
+        ] : [];
+        return array_merge($base, $relationships);
     }
 
-    public function getName(): string
+    private function tasks(): array
     {
-        return $this->name;
-    }
-
-    public function setName(string $name): void
-    {
-        $this->name = $name;
-    }
-
-    public function getEmail(): string
-    {
-        return $this->email;
-    }
-
-    public function setEmail(string $email): void
-    {
-        $this->email = $email;
-    }
-
-    public function getPassword(): string
-    {
-        return $this->password;
-    }
-
-    public function setPassword(string $password): void
-    {
-        $this->password = $password;
+        $result = [];
+        foreach ($this->tasks as $task) {
+            $result[] = $task->serialize();
+        }
+        return $result;
     }
 }

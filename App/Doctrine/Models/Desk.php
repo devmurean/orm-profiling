@@ -6,25 +6,30 @@ use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\JoinColumn;
-use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\OneToOne;
 use Doctrine\ORM\Mapping\Table;
 
 #[Entity]
-#[Table(name: 'tasks')]
-class Task
+#[Table(name: 'desks')]
+class Desk
 {
     #[Id]
     #[Column(name:'id', type: 'integer')]
     #[GeneratedValue]
     private $id;
 
-    #[Column(name: 'description', type: 'text')]
-    private $description;
+    #[Column(name: 'location', type: 'string', length: 30)]
+    private $location;
 
-    #[Column(name: 'email', type: 'string', length: 255)]
-    private $email;
-
-    #[ManyToOne(targetEntity: User::class, inversedBy: 'tasks')]
+    #[OneToOne(targetEntity: User::class, inversedBy: 'desk')]
     #[JoinColumn(name: 'user_id', referencedColumnName:'id')]
-    private $user;
+    private User|null $user = null;
+
+    public function serialize(): array
+    {
+        return [
+            'id' => $this->id,
+            'location' => $this->location,
+        ];
+    }
 }

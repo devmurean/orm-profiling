@@ -1,7 +1,7 @@
 <?php
-require __DIR__ . "/vendor/autoload.php";
+require realpath('.') . "/vendor/autoload.php";
 
-require "./src/Controllers/CRUDController.php";
+require "./App/Controllers/CRUDController.php";
 app()->group('/(doctrine|eloquent)/user', ['namespace' => 'App\Controllers', function () {
     app()->post('/', 'CRUDController@createOperation');
     app()->put('/', 'CRUDController@updateOperation');
@@ -10,7 +10,7 @@ app()->group('/(doctrine|eloquent)/user', ['namespace' => 'App\Controllers', fun
     app()->get('/lookup', 'CRUDController@lookupOperation');
 }]);
 
-require "./src/Controllers/PolymorphicSTController.php";
+require "./App/Controllers/PolymorphicSTController.php";
 // Polymorphic ST
 app()->group('/(doctrine|eloquent)/st', ['namespace' => 'App\Controllers', function () {
     app()->post('/', 'PolymorphicSTController@createOperation');
@@ -21,7 +21,7 @@ app()->group('/(doctrine|eloquent)/st', ['namespace' => 'App\Controllers', funct
 }]);
 
 // Polymorphic TPC
-require "./src/Controllers/PolymorphicTPCController.php";
+require "./App/Controllers/PolymorphicTPCController.php";
 app()->group('/(doctrine|eloquent)/tpc', ['namespace' => 'App\Controllers', function () {
     app()->post('/', 'PolymorphicTPCController@createOperation');
     app()->put('/', 'PolymorphicTPCController@updateOperation');
@@ -31,7 +31,7 @@ app()->group('/(doctrine|eloquent)/tpc', ['namespace' => 'App\Controllers', func
 }]);
 
 // Polymorphic TPCC
-require "./src/Controllers/PolymorphicTPCCController.php";
+require "./App/Controllers/PolymorphicTPCCController.php";
 app()->group('/(doctrine|eloquent)/tpcc', ['namespace' => 'App\Controllers', function () {
     app()->post('/', 'PolymorphicTPCCController@createOperation');
     app()->put('/', 'PolymorphicTPCCController@updateOperation');
@@ -41,10 +41,10 @@ app()->group('/(doctrine|eloquent)/tpcc', ['namespace' => 'App\Controllers', fun
 }]);
 
 // Propagation
-require "./src/Controllers/PropagationController.php";
+require "./App/Controllers/PropagationController.php";
 app()->post('/(doctrine|eloquent)/propagation/(add|update|delete)', 'App\Controllers\PropagationController@invoke');
 // Isolation
-require "./src/Controllers/IsolationController.php";
+require "./App/Controllers/IsolationController.php";
 app()->post('/(doctrine|eloquent)/isolation/(add|update|delete)', 'App\Controllers\IsolationController@invoke');
 
 app()->run();
