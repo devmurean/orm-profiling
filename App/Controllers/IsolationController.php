@@ -11,7 +11,8 @@ class IsolationController extends Controller
             case 'add':
                 return $object->createDatabase();
             case 'update':
-                return $object->alterDatabaseEncryption(array_rand([true, false], 1));
+                $encrypted = [true, false];
+                return $object->alterDatabaseEncryption($encrypted[array_rand($encrypted, 1)]);
             case 'delete':
                 return $object->deleteDatabase();
         }
