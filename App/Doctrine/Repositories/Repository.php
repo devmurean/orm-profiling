@@ -27,8 +27,8 @@ class Repository
         return $result;
     }
 
-    protected function randomEntity(string $class): object
+    protected function randomEntity(string $class, int $random_min = 1, int $random_max = 10000): object
     {
-        return $this->em->find($class, rand(1, 10000));
+        return $this->em->find($class, rand($random_min, $random_max));
     }
 }
