@@ -1,13 +1,13 @@
 <?php
 namespace App\Doctrine\Models;
 
+use App\Doctrine\Models\Entity as ModelsEntity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
-use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\JoinTable;
 use Doctrine\ORM\Mapping\ManyToMany;
 use Doctrine\ORM\Mapping\OneToMany;
@@ -16,7 +16,7 @@ use Doctrine\ORM\Mapping\Table;
 
 #[Entity]
 #[Table(name: 'users')]
-class User
+class User extends ModelsEntity
 {
     #[Id]
     #[Column(name:'id', type: 'integer')]
@@ -48,7 +48,7 @@ class User
         $this->roles = new ArrayCollection();
     }
     
-    public function serialize(bool $withRelationship = false)
+    public function serialize(bool $withRelationship = false): array
     {
         $base = [
             'id' => $this->id,
@@ -57,19 +57,17 @@ class User
         ];
 
         $relationships = $withRelationship ? [
-            'tasks' => $this->tasks(),
-            'roles' => $this->roles,
-            'desk' => $this->desk->serialize()
+            'tasks' => $this->serializeCollection($this->tasks),
+            'roles' => $this->serializeCollection($this->roles),
+            'desk' => $this->desk->serialize(),
         ] : [];
         return array_merge($base, $relationships);
     }
 
-    private function tasks(): array
+    public function init(string $name, string $email, string $password): void
     {
-        $result = [];
-        foreach ($this->tasks as $task) {
-            $result[] = $task->serialize();
-        }
-        return $result;
+        $this->name = $name;
+        $this->email = $email;
+        $this->password = $password;
     }
 }

@@ -1,6 +1,7 @@
 <?php
 namespace App\Doctrine\Repositories;
 
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManager;
 use Faker\Factory;
 use Faker\Generator;
@@ -15,5 +16,19 @@ class Repository
 
         $this->em = getEntityManager();
         $this->faker = Factory::create();
+    }
+
+    protected function serializeCollection(Collection|array $collection): array
+    {
+        $result = [];
+        foreach ($collection as $item) {
+            $result[] = $item->serialize();
+        }
+        return $result;
+    }
+
+    protected function randomEntity(string $class): object
+    {
+        return $this->em->find($class, rand(1, 1000));
     }
 }

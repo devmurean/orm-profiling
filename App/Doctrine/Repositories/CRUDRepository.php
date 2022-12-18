@@ -8,30 +8,57 @@ class CRUDRepository extends Repository
 {
     public function createOperation()
     {
+        $user = new User;
+        $user->init(
+            name: $this->faker->name,
+            email: $this->faker->uuid . '@example.com',
+            password: 'password'
+        );
+        $this->em->persist($user);
+        $this->em->flush();
+
+        return response()->json([
+            'user' => $user->serialize()
+        ]);
     }
     public function updateOperation()
     {
+        $user = $this->randomEntity(User::class);
+        $user->init(
+            name: $this->faker->name,
+            email: $this->faker->uuid . '@example.com',
+            password: 'password'
+        );
+        $this->em->persist($user);
+        $this->em->flush();
+
+        return response()->json([
+            'user' => $user->serialize()
+        ]);
     }
     public function deleteOperation()
     {
+        $user = $this->randomEntity(User::class);
+        $this->em->remove($user);
+        $this->em->flush();
+
+        return response()->json([
+            'user' => $user->serialize()
+        ]);
     }
     public function readOperation()
     {
         $users = $this->em->getRepository(User::class)->findAll();
-        $result = [];
-        foreach ($users as $user) {
-            $result[] = $user->serialize();
-        }
         return response()->json([
-            'users' => $result
+            'users' => $this->serializeCollection($users)
         ]);
     }
     public function lookupOperation()
     {
         /** @var User */
-        $user = $this->em->find(User::class, 1);
+        $user = $this->randomEntity(User::class);
         return response()->json([
-            'user' => $user->serialize(withRelationship: false)
+            'user' => $user->serialize(withRelationship: true)
         ]);
     }
 }

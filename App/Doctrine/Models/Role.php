@@ -29,4 +29,12 @@ class Role
     {
         $this->users = new ArrayCollection();
     }
+
+    public function serialize(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name
+        ];
+    }
 }
