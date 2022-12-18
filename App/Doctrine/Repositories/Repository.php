@@ -29,6 +29,6 @@ class Repository
 
     protected function randomEntity(string $class): object
     {
-        return $this->em->find($class, rand(1, 1000));
+        return $this->em->find($class, rand(1, 10000));
     }
 }
