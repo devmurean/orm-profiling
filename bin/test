@@ -11,9 +11,10 @@ $options = getopt('', [
     'host:',
     'number:',
     'orm:',
+    'memory_log'
 ]);
 if (array_key_exists('help', $options) && $options['help'] === false) {
-    echo 'php test --number 10 --concurrent 1 --orm doctrine|eloquent --db "_" --db_password "_" --db_username "_" --folder "_" --group "_" --host "_"' . PHP_EOL;
+    echo 'php test --number 10 --concurrent 1 --orm doctrine|eloquent --db "_" --db_password "_" --db_username "_" --folder "_" --group "_" --host "_" --memory_log' . PHP_EOL;
     return;
 }
 $endpoints = [
@@ -177,16 +178,71 @@ $endpoints = [
 // 'ab -k -n 100 -c 10 -p data.txt -T application/json localhost:8000/doctrine/user > profiling.txt'
 function main(string $group, array $endpoints, array $options)
 {
+    echo 'Start profiling ' . $group . '...' . PHP_EOL;
+    standardProfiling($group, $endpoints, $options);
+    echo 'Done' . PHP_EOL;
+    return;
+}
+
+function standardProfiling(string $group, array $endpoints, array $options): void
+{
+    foreach ($endpoints[$group] as $e) {
+        execSeedingCommand($group, $options);
+        execAbCommand($group, $options, $e);
+    }
+}
+
+/**
+ * Reset related table content
+ *
+ * @param string $group
+ * @param array $options
+ * @return void
+ */
+function execSeedingCommand(string $group, array $options): void
+{
+    echo 'Prepare database table(s)...' . PHP_EOL;
+     
+    $command = 'mysql -u ' . $options['db_username']
+        . ' --password=' . $options['db_password'] . ' '
+        . $options['db'] . ' < ./mysql-dump/' . sqlDumpMapping($group);
+
+    exec($command);
+}
+
+/**
+ * Run ab command
+ *
+ * @param string $group
+ * @param array $options
+ * @param array $e Single item from $endpoints[$group]
+ * @return void
+ */
+function execAbCommand(string $group, array $options, array $e): void
+{
     $n = $options['number'];
     $c = $options['concurrent'];
     $outputFolder = $options['folder'];
     $orm = $options['orm'];
     $host = $options['host'];
-    $db = $options['db'];
-    $dbPassword = $options['db_password'];
-    $dbUsername = $options['db_username'];
 
-    $sqlDumpFilename = [
+    $endpoint = $host . '/' . $orm . $e['value'];
+    $memory_log = $options['memory_log'] === false ? 'memory.' : '';
+    // Command Builder
+    echo 'Profiling ' . '['.$e['name'].'] ' . $endpoint . '...' . PHP_EOL;
+    $command = 'ab -k -n ' . $n . ' -c ' . $c . ' ';
+    $command .= $e['method'] === 'post' ? '-p data.txt -T application/json' : '';
+    $command .= ' ' . $endpoint;
+    $command .= ' > ' . $outputFolder . '/' . $group . '.ab.' . $memory_log . $e['name'] . '.txt';
+
+    // Command Execution
+    exec($command);
+    echo $endpoint . ' profiled...' . PHP_EOL . PHP_EOL;
+}
+
+function sqlDumpMapping(string $group): string
+{
+    $list = [
         'crud' => 'orm_profiling_crud.sql',
         'st' => 'orm_profiling_st.sql',
         'tpc' => 'orm_profiling_tpc.sql',
@@ -195,26 +251,7 @@ function main(string $group, array $endpoints, array $options)
         'isolation' => 'orm_profiling_isolation_propagation',
     ];
 
-    echo 'Start profiling ' . $group . '...' . PHP_EOL;
-    foreach ($endpoints[$group] as $e) {
-        // Reset/Prepare Table Contents
-        echo 'Prepare database table(s)...' . PHP_EOL;
-        exec('mysql -u ' . $dbUsername . ' --password=' . $dbPassword . ' ' . $db . ' < ./mysql-dump/' . $sqlDumpFilename[$group]);
-        $endpoint = $host . '/' . $orm . $e['value'];
-        
-        // Command Builder
-        echo 'Profiling ' . '['.$e['name'].'] ' . $endpoint . '...' . PHP_EOL;
-        $command = 'ab -k -n ' . $n . ' -c ' . $c . ' ';
-        $command .= $e['method'] === 'post' ? '-p data.txt -T application/json' : '';
-        $command .= ' ' . $endpoint;
-        $command .= ' > ' . $outputFolder . '/' . $group . '.ab.' . $e['name'] . '.txt';
-
-        // Command Execution
-        exec($command);
-        echo $endpoint . ' profiled...' . PHP_EOL . PHP_EOL;
-    }
-    echo 'Done' . PHP_EOL;
-    return;
+    return $list[$group];
 }
 
 main(group: $options['group'], endpoints: $endpoints, options: $options);

@@ -16,6 +16,16 @@ class Repository
 
         $this->em = getEntityManager();
         $this->faker = Factory::create();
+        if ($_ENV['LOG_MEMORY_USAGE'] === true) {
+            echo 'Memory Log [Start]: ' . memory_get_usage();
+        }
+    }
+
+    public function __destruct()
+    {
+        if ($_ENV['LOG_MEMORY_USAGE'] === true) {
+            echo 'Memory Log [End]: ' . memory_get_usage();
+        }
     }
 
     protected function serializeCollection(Collection|array $collection): array

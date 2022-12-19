@@ -1,5 +1,9 @@
 <?php
+use Dotenv\Dotenv;
+
 require realpath('.') . "/vendor/autoload.php";
+$dotenv = Dotenv::createImmutable(__DIR__);
+$dotenv->load();
 
 require "./App/Controllers/CRUDController.php";
 app()->group('/(doctrine|eloquent)/user', ['namespace' => 'App\Controllers', function () {

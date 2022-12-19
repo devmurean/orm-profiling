@@ -21,3 +21,7 @@ Homestead.yaml
 Homestead.json
 /.vagrant
 .phpunit.result.cache
+
+bin/load-profiling-result/*
+bin/memory-profiling-result/*
+bin/xdebug-profiling-result/*

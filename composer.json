@@ -18,6 +18,7 @@
         "leafs/router": "^0.1.10",
         "leafs/cookie": "^1.1",
         "fakerphp/faker": "^1.20",
-        "symfony/cache": "^6.0"
+        "symfony/cache": "^6.0",
+        "vlucas/phpdotenv": "^5.5"
     }
 }
