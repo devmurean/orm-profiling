@@ -6,7 +6,6 @@ use App\Eloquent\Models\EmployeeTPC;
 use App\Eloquent\Models\PermanentTPC;
 use App\Eloquent\Repositories\Repository;
 use Illuminate\Database\Capsule\Manager as DB;
-use Illuminate\Database\Eloquent\Model;
 
 class PolymorphicTPCRepository extends Repository
 {
@@ -96,7 +95,7 @@ class PolymorphicTPCRepository extends Repository
     public function lookupOperation()
     {
         return response()->json([
-            'employee' => EmployeeTPC::with('employment')->find($this->randomId(max: 100))
+            'employee' => EmployeeTPC::with('employment')->find($this->randomId(max: 10000))
         ]);
     }
 }
