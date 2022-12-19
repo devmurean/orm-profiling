@@ -1,0 +1,220 @@
+#!/usr/bin/env php
+<?php
+$options = getopt('', [
+    'concurrent:',
+    'db:',
+    'db_password:',
+    'db_username:',
+    'folder:',
+    'group:',
+    'help',
+    'host:',
+    'number:',
+    'orm:',
+]);
+if (array_key_exists('help', $options) && $options['help'] === false) {
+    echo 'php test --number 10 --concurrent 1 --orm doctrine|eloquent --db "_" --db_password "_" --db_username "_" --folder "_" --group "_" --host "_"' . PHP_EOL;
+    return;
+}
+$endpoints = [
+    // CRUD Group
+    'crud' => [
+        [
+            'method' => 'post',
+            'name' => 'create',
+            'value' => '/user'
+        ],
+        [
+            'method' => 'put',
+            'name' => 'update',
+            'value' => '/user'
+        ],
+        [
+            'method' => 'post',
+            'name' => 'delete',
+            'value' => '/user/delete'
+        ],
+        [
+            'method' => 'get',
+            'name' => 'read',
+            'value' => '/user'
+        ],
+        [
+            'method' => 'get',
+            'name' => 'lookup',
+            'value' => '/user/lookup'
+        ],
+    ],
+
+    // ST Group
+    'st' => [
+        [
+            'method' => 'post',
+            'name' => 'create',
+            'value' => '/st'
+        ],
+        [
+            'method' => 'put',
+            'name' => 'update',
+            'value' => '/st'
+        ],
+        [
+            'method' => 'post',
+            'name' => 'delete',
+            'value' => '/st/delete'
+        ],
+        [
+            'method' => 'get',
+            'name' => 'read',
+            'value' => '/st'
+        ],
+        [
+            'method' => 'get',
+            'name' => 'lookup',
+            'value' => '/st/lookup'
+        ],
+    ],
+
+    // TPC Group
+    'tpc' => [
+        [
+            'method' => 'post',
+            'name' => 'create',
+            'value' => '/tpc'
+        ],
+        [
+            'method' => 'put',
+            'name' => 'update',
+            'value' => '/tpc'
+        ],
+        [
+            'method' => 'post',
+            'name' => 'delete',
+            'value' => '/tpc/delete'
+        ],
+        [
+            'method' => 'get',
+            'name' => 'read',
+            'value' => '/tpc'
+        ],
+        [
+            'method' => 'get',
+            'name' => 'lookup',
+            'value' => '/tpc/lookup'
+        ],
+    ],
+
+    // TPCC Group
+    'tpcc' => [
+        [
+            'method' => 'post',
+            'name' => 'create',
+            'value' => '/tpcc'
+        ],
+        [
+            'method' => 'put',
+            'name' => 'update',
+            'value' => '/tpcc'
+        ],
+        [
+            'method' => 'post',
+            'name' => 'delete',
+            'value' => '/tpcc/delete'
+        ],
+        [
+            'method' => 'get',
+            'name' => 'read',
+            'value' => '/tpcc'
+        ],
+        [
+            'method' => 'get',
+            'name' => 'lookup',
+            'value' => '/tpcc/lookup'
+        ],
+    ],
+
+    // Propagation Group
+    'propagation' => [
+        [
+            'method' => 'post',
+            'name' => 'create',
+            'value' => '/propagation/add'
+        ],
+        [
+            'method' => 'put',
+            'name' => 'update',
+            'value' => '/propagation/update'
+        ],
+        [
+            'method' => 'post',
+            'name' => 'delete',
+            'value' => '/propagation/delete'
+        ],
+    ],
+
+    // Isolation Group
+    'isolation' => [
+        [
+            'method' => 'post',
+            'name' => 'create',
+            'value' => '/isolation/add'
+        ],
+        [
+            'method' => 'put',
+            'name' => 'update',
+            'value' => '/isolation/update'
+        ],
+        [
+            'method' => 'post',
+            'name' => 'delete',
+            'value' => '/isolation/delete'
+        ],
+    ],
+
+];
+
+// Example command
+// 'ab -k -n 100 -c 10 -p data.txt -T application/json localhost:8000/doctrine/user > profiling.txt'
+function main(string $group, array $endpoints, array $options)
+{
+    $n = $options['number'];
+    $c = $options['concurrent'];
+    $outputFolder = $options['folder'];
+    $orm = $options['orm'];
+    $host = $options['host'];
+    $db = $options['db'];
+    $dbPassword = $options['db_password'];
+    $dbUsername = $options['db_username'];
+
+    $sqlDumpFilename = [
+        'crud' => 'orm_profiling_crud.sql',
+        'st' => 'orm_profiling_st.sql',
+        'tpc' => 'orm_profiling_tpc.sql',
+        'tpcc' => 'orm_profiling_tpcc.sql',
+        'propagation' => 'orm_profiling_isolation_propagation',
+        'isolation' => 'orm_profiling_isolation_propagation',
+    ];
+
+    echo 'Start profiling ' . $group . '...' . PHP_EOL;
+    foreach ($endpoints[$group] as $e) {
+        // Reset/Prepare Table Contents
+        echo 'Prepare database table(s)...' . PHP_EOL;
+        exec('mysql -u ' . $dbUsername . ' --password=' . $dbPassword . ' ' . $db . ' < ./mysql-dump/' . $sqlDumpFilename[$group]);
+        $endpoint = $host . '/' . $orm . $e['value'];
+        
+        // Command Builder
+        echo 'Profiling ' . '['.$e['name'].'] ' . $endpoint . '...' . PHP_EOL;
+        $command = 'ab -k -n ' . $n . ' -c ' . $c . ' ';
+        $command .= $e['method'] === 'post' ? '-p data.txt -T application/json' : '';
+        $command .= ' ' . $endpoint;
+        $command .= ' > ' . $outputFolder . '/' . $group . '.ab.' . $e['name'] . '.txt';
+
+        // Command Execution
+        exec($command);
+        echo $endpoint . ' profiled...' . PHP_EOL . PHP_EOL;
+    }
+    echo 'Done' . PHP_EOL;
+    return;
+}
+
+main(group: $options['group'], endpoints: $endpoints, options: $options);
