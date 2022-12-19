@@ -13,4 +13,9 @@ class Repository
     {
         $this->faker = Factory::create();
     }
+
+    protected function randomId(int $min = 1, int $max = 1000): int
+    {
+        return rand($min, $max);
+    }
 }

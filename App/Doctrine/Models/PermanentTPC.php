@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Table;
 
 #[Entity]
-#[Table('doctrine_permanent_tpc')]
+#[Table('permanent_tpc')]
 class PermanentTPC extends EmployeeTPC
 {
     #[Column()]

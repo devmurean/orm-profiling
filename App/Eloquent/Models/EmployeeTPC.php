@@ -4,10 +4,11 @@ namespace App\Eloquent\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\Relation;
 
 class EmployeeTPC extends Model
 {
-    protected $table = 'eloquent_employee_tpc';
+    protected $table = 'employee_tpc';
     protected $fillable = [
         'name',
         'address',
@@ -17,6 +18,10 @@ class EmployeeTPC extends Model
 
     public function employment(): MorphTo
     {
-        return $this->morphTo('employment', 'type', 'id', 'employee_tpc_id');
+        Relation::morphMap([
+            'permanent' => PermanentTPC::class,
+            'contract' => ContractTPC::class,
+        ]);
+        return $this->morphTo('employment', 'type', 'id', 'id');
     }
 }

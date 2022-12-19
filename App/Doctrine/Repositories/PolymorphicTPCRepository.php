@@ -42,7 +42,7 @@ class PolymorphicTPCRepository extends Repository
     }
     public function updateOperation()
     {
-        $employee = $this->randomEntity(EmployeeTPC::class);
+        $employee = $this->randomEntity(EmployeeTPC::class, random_max: 100);
         if (get_class($employee) === PermanentTPC::class) {
             $employee->init(
                 name: $this->faker->name,
@@ -64,7 +64,7 @@ class PolymorphicTPCRepository extends Repository
     }
     public function deleteOperation()
     {
-        $employee = $this->randomEntity(EmployeeTPC::class);
+        $employee = $this->randomEntity(EmployeeTPC::class, random_max: 100);
         $this->em->remove($employee);
         $this->em->flush();
         return response()->json([
@@ -73,7 +73,7 @@ class PolymorphicTPCRepository extends Repository
     }
     public function lookupOperation()
     {
-        $employee = $this->randomEntity(EmployeeTPC::class);
+        $employee = $this->randomEntity(EmployeeTPC::class, random_max: 100);
         return response()->json([
             'employee' => $employee->serialize()
         ]);

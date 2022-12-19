@@ -12,9 +12,9 @@ use Doctrine\ORM\Mapping\Table;
 
 #[Entity]
 #[InheritanceType('JOINED')]
-#[DiscriminatorColumn(name: 'type', type: 'string', columnDefinition: 'employee_tpc_id')]
-#[DiscriminatorMap(['App\Doctrine\Models\PermanentTPC' => PermanentTPC::class, 'App\Doctrine\Models\ContractTPC' => ContractTPC::class])]
-#[Table('doctrine_employee_tpc')]
+#[DiscriminatorColumn(name: 'type', type: 'string')]
+#[DiscriminatorMap(['permanent' => PermanentTPC::class, 'contract' => ContractTPC::class])]
+#[Table('employee_tpc')]
 class EmployeeTPC
 {
     #[Id]
@@ -27,11 +27,6 @@ class EmployeeTPC
 
     #[Column()]
     protected string $address;
-
-    #[Column()]
-    private string $type;
-
-   
 
     public function serialize(): array
     {

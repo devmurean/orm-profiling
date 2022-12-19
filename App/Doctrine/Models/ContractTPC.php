@@ -6,7 +6,7 @@ use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\Table;
 
 #[Entity]
-#[Table('doctrine_contract_tpc')]
+#[Table('contract_tpc')]
 class ContractTPC extends EmployeeTPC
 {
     #[Column()]

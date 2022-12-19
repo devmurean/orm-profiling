@@ -29,7 +29,7 @@ class CRUDRepository extends Repository
     public function updateOperation()
     {
         try {
-            $user = User::inRandomOrder()->first();
+            $user = User::find($this->randomId());
             $user->name = $this->faker->name;
             $user->saveOrFail();
 
@@ -45,7 +45,7 @@ class CRUDRepository extends Repository
 
     public function deleteOperation()
     {
-        $user = User::inRandomOrder()->first();
+        $user = User::find($this->randomId());
         $user->delete();
         return response()->json([
             'user' => $user
@@ -54,7 +54,7 @@ class CRUDRepository extends Repository
 
     public function lookupOperation()
     {
-        $user = User::with(['task', 'role', 'desk'])->inRandomOrder()->first();
+        $user = User::with(['task', 'role', 'desk'])->find($this->randomId());
         return response()->json([
             'user' => $user
         ]);

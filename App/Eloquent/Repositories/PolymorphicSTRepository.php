@@ -33,7 +33,7 @@ class PolymorphicSTRepository extends Repository
     {
         try {
             /** @var EmployeeST */
-            $employee = EmployeeST::inRandomOrder()->first();
+            $employee = EmployeeST::find($this->randomId(max: 10000));
             $employee->fill([
                 'name' => $this->faker->name,
                 'address' => $this->faker->address
@@ -47,7 +47,7 @@ class PolymorphicSTRepository extends Repository
     public function deleteOperation()
     {
         /** @var EmployeeST */
-        $employee = EmployeeST::inRandomOrder()->first();
+        $employee = EmployeeST::find($this->randomId(max: 10000));
         $employee->delete();
         return response()->json([
             'employee' => $employee
@@ -55,7 +55,7 @@ class PolymorphicSTRepository extends Repository
     }
     public function lookupOperation()
     {
-        $employee = EmployeeST::inRandomOrder()->first();
+        $employee = EmployeeST::find($this->randomId(max: 10000));
         return response()->json([ 'employee' => $employee ]);
     }
 }

@@ -61,8 +61,8 @@ class PolymorphicTPCRepository extends Repository
         ]);
 
         $object = ($selectedEmployeeType === PermanentTPC::class)
-            ? PermanentTPC::inRandomOrder()->first()
-            : ContractTPC::inRandomOrder()->first();
+            ? PermanentTPC::find($this->randomId(max: 5000))
+            : ContractTPC::find($this->randomId(min: 5001, max: 10000));
         
         $object->fill([
             'nik' => rand(10**5, 10**6-1),
@@ -79,7 +79,7 @@ class PolymorphicTPCRepository extends Repository
     {
         try {
             DB::beginTransaction();
-            $employee = EmployeeTPC::inRandomOrder()->first();
+            $employee = EmployeeTPC::find($this->randomId(max: 10000));
             $employee->employment()->delete();
             $employee->delete();
             DB::commit();
@@ -96,7 +96,7 @@ class PolymorphicTPCRepository extends Repository
     public function lookupOperation()
     {
         return response()->json([
-            'employee' => EmployeeTPC::inRandomOrder()->with('employment')->first()
+            'employee' => EmployeeTPC::with('employment')->find($this->randomId(max: 100))
         ]);
     }
 }

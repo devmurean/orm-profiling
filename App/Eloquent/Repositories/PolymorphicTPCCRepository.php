@@ -59,13 +59,13 @@ class PolymorphicTPCCRepository extends Repository
         $object = null;
         switch ($resource) {
             case 'permanent':
-                $object = PermanentTPCC::inRandomOrder()->first();
+                $object = PermanentTPCC::find($this->randomId(max: 5000));
                 break;
             case 'contract':
-                $object = ContractTPCC::inRandomOrder()->first();
+                $object = ContractTPCC::find($this->randomId(min: 5001, max: 10000));
                 break;
             case 'employee':
-                $object = EmployeeTPCC::inRandomOrder()->first();
+                $object = EmployeeTPCC::find($this->randomId(max: 10000));
                 break;
         }
         $object->name = $this->faker->name;
@@ -80,13 +80,13 @@ class PolymorphicTPCCRepository extends Repository
         $result = [];
         switch ($resource) {
             case 'permanent':
-                $object = PermanentTPCC::inRandomOrder()->first();
+                $object = PermanentTPCC::find($this->randomId(max: 5000));
                 break;
             case 'contract':
-                $object = ContractTPCC::inRandomOrder()->first();
+                $object = ContractTPCC::find($this->randomId(min: 5001, max: 10000));
                 break;
             case 'employee':
-                $object = EmployeeTPCC::inRandomOrder()->first();
+                $object = EmployeeTPCC::find($this->randomId(max: 10000));
                 break;
         }
         $object->delete();
@@ -99,13 +99,13 @@ class PolymorphicTPCCRepository extends Repository
         $object = null;
         switch ($resource) {
             case 'permanent':
-                $object = PermanentTPCC::inRandomOrder()->first();
+                $object = PermanentTPCC::find($this->randomId(max: 5000));
                 break;
             case 'contract':
-                $object = ContractTPCC::inRandomOrder()->first();
+                $object = ContractTPCC::find($this->randomId(min: 5001, max: 10000));
                 break;
             case 'employee':
-                $object = EmployeeTPCC::inRandomOrder()->first();
+                $object = EmployeeTPCC::find($this->randomId(max: 10000));
                 break;
         }
         $result[$resource] = $object;
