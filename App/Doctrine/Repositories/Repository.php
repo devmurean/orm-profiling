@@ -10,21 +10,28 @@ class Repository
 {
     protected Generator $faker;
     protected EntityManager $em;
+    
     public function __construct()
     {
         require_once realpath('.').'/App/Bootstraps/DoctrineBootstrap.php';
 
         $this->em = getEntityManager();
         $this->faker = Factory::create();
-        if ($_ENV['LOG_MEMORY_USAGE'] === true) {
-            echo 'Memory Log [Start]: ' . memory_get_usage();
-        }
     }
 
     public function __destruct()
     {
-        if ($_ENV['LOG_MEMORY_USAGE'] === true) {
-            echo 'Memory Log [End]: ' . memory_get_usage();
+        if ((bool) $_ENV['LOG_MEMORY_USAGE'] === true) {
+            $filename = $_SERVER['REQUEST_METHOD'] . str_replace('/', '.', $_SERVER['PATH_INFO']);
+        
+            $peakMemoryUsage = memory_get_peak_usage();
+            echo $filePath = realpath('.') . '/bin/memory-profiling-result/'.$filename.'.txt';
+            if (!file_exists($filePath)) {
+                touch($filePath);
+            }
+            $content = file_get_contents($filePath);
+            $content .= time() . '.' . $filename . ':' . $peakMemoryUsage . PHP_EOL;
+            file_put_contents($filePath, $content);
         }
     }
 

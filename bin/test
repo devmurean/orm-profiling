@@ -11,10 +11,24 @@ $options = getopt('', [
     'host:',
     'number:',
     'orm:',
-    'memory_log'
+    'memory_log',
+    'xdebug',
 ]);
 if (array_key_exists('help', $options) && $options['help'] === false) {
-    echo 'php test --number 10 --concurrent 1 --orm doctrine|eloquent --db "_" --db_password "_" --db_username "_" --folder "_" --group "_" --host "_" --memory_log' . PHP_EOL;
+    echo 'php test [commands] ' . PHP_EOL .
+    'Every command is mandatory ' .
+    PHP_EOL . 'Commands:' . PHP_EOL .
+    '    [--number int]             Number of request' . PHP_EOL .
+    '    [--concurrent int]         Number of concurrent request' . PHP_EOL .
+    '    [--orm doctrine|eloquent]  ORM selection, either Doctrine or Eloquent ' . PHP_EOL .
+    '    [--db string]              Database name' . PHP_EOL .
+    '    [--db_password string]     Database password' . PHP_EOL .
+    '    [--db_username string]     Database username' . PHP_EOL .
+    '    [--host string]            Test target, either IP address or domain name' . PHP_EOL .
+    '    [--memory_log bool]        (Optional) Indicate that the memory logging is included in test' . PHP_EOL .
+    '    [--xdebug bool]            (Optional) Indicate that the xdebug profiling is included in test' . PHP_EOL .
+    '    [--group string]           Decide which test group to run. ' . PHP_EOL .
+    '                               Groups: crud, st, tpc, tpcc, propagation, isolation'. PHP_EOL;
     return;
 }
 $endpoints = [
@@ -179,16 +193,27 @@ $endpoints = [
 function main(string $group, array $endpoints, array $options)
 {
     echo 'Start profiling ' . $group . '...' . PHP_EOL;
-    standardProfiling($group, $endpoints, $options);
+    profile($group, $endpoints, $options);
     echo 'Done' . PHP_EOL;
     return;
 }
 
-function standardProfiling(string $group, array $endpoints, array $options): void
+function profile(string $group, array $endpoints, array $options, bool $isolation = false): void
 {
     foreach ($endpoints[$group] as $e) {
-        execSeedingCommand($group, $options);
-        execAbCommand($group, $options, $e);
+        if ($isolation && $e['name'] === 'update') {
+            $dbName = 'test_db_' . rand(10**4, 10**5-1);
+            $command = 'mysql -u ' . $options['db_username'] . ' -p' . $options['db_password'] .
+                ' -e "CREATE DATABASE ' . $dbName . ';"';
+            exec($command);
+            execAbCommand($group, $options, $e);
+            $command = 'mysql -u ' . $options['db_username'] . ' -p' . $options['db_password'] .
+                ' -e "DROP DATABASE ' . $dbName . ';"';
+            exec($command);
+        } else {
+            execSeedingCommand($group, $options);
+            execAbCommand($group, $options, $e);
+        }
     }
 }
 
@@ -222,22 +247,34 @@ function execAbCommand(string $group, array $options, array $e): void
 {
     $n = $options['number'];
     $c = $options['concurrent'];
-    $outputFolder = $options['folder'];
     $orm = $options['orm'];
     $host = $options['host'];
-
+    
     $endpoint = $host . '/' . $orm . $e['value'];
     $memory_log = $options['memory_log'] === false ? 'memory.' : '';
+    $xdebug = $options['xdebug'] === false ? 'xdebug.' : '';
     // Command Builder
     echo 'Profiling ' . '['.$e['name'].'] ' . $endpoint . '...' . PHP_EOL;
     $command = 'ab -k -n ' . $n . ' -c ' . $c . ' ';
     $command .= $e['method'] === 'post' ? '-p data.txt -T application/json' : '';
     $command .= ' ' . $endpoint;
-    $command .= ' > ' . $outputFolder . '/' . $group . '.ab.' . $memory_log . $e['name'] . '.txt';
+    $command .= ' > ' . getOutputFolder($options) .
+         '/' . $group . '.ab.' . $memory_log . $xdebug . $e['name'] . '.' . time() . '.txt';
 
     // Command Execution
     exec($command);
     echo $endpoint . ' profiled...' . PHP_EOL . PHP_EOL;
+}
+
+function getOutputFolder(array $options)
+{
+    if (array_key_exists('memory_log', $options)) {
+        return 'memory-profiling-result';
+    } elseif (array_key_exists('xdebug', $options)) {
+        return 'xdebug-profiling-result';
+    } else {
+        return 'load-profiling-result';
+    }
 }
 
 function sqlDumpMapping(string $group): string
@@ -248,7 +285,6 @@ function sqlDumpMapping(string $group): string
         'tpc' => 'orm_profiling_tpc.sql',
         'tpcc' => 'orm_profiling_tpcc.sql',
         'propagation' => 'orm_profiling_isolation_propagation',
-        'isolation' => 'orm_profiling_isolation_propagation',
     ];
 
     return $list[$group];
