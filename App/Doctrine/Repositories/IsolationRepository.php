@@ -13,10 +13,10 @@ class IsolationRepository extends Repository
         parent::__construct();
         $this->rsm = new ResultSetMapping();
     }
-    public function createDatabase()
+    public function createDatabase($dbName)
     {
         $result = $this->em->createNativeQuery(
-            'CREATE DATABASE IF NOT EXISTS ' . self::DATABASE_NAME,
+            'CREATE DATABASE IF NOT EXISTS ' . $dbName,
             $this->rsm
         );
         $result = $result->execute();
@@ -32,10 +32,10 @@ class IsolationRepository extends Repository
         $result = $result->execute();
         return response()->json(['result' => $result]);
     }
-    public function deleteDatabase()
+    public function deleteDatabase($dbName)
     {
         $result = $this->em->createNativeQuery(
-            'DROP DATABASE IF EXISTS ' .  self::DATABASE_NAME,
+            'DROP DATABASE IF EXISTS ' .  $dbName,
             $this->rsm
         );
         $result = $result->execute();
