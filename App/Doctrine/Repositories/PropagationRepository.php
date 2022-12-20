@@ -25,23 +25,24 @@ class PropagationRepository extends Repository
         $result = $result->execute();
         return response()->json(['result' => $result]);
     }
-    public function updateAttribute()
+    public function updateAttribute() // update position
     {
+        $columns = ['id', 'first_name', 'last_name', 'address', 'email'];
+        $selectedColumn = $this->faker->randomElement($columns);
+
         $result = $this->em->createNativeQuery(
-            'ALTER TABLE ' .
-            self::TABLE .
-            ' CHANGE COLUMN additional_column new_additional_column INT NULL',
+            'ALTER TABLE ' . self::TABLE .
+            ' CHANGE COLUMN additional_column additional_column' .
+            ' INT NULL AFTER `' . $selectedColumn . '`',
             $this->rsm
         );
         $result = $result->execute();
         return response()->json(['result' => $result]);
     }
-    public function deleteAttribute()
+    public function deleteAttribute($name)
     {
         $result = $this->em->createNativeQuery(
-            'ALTER TABLE ' .
-            self::TABLE .
-            ' DROP COLUMN new_additional_column',
+            'ALTER TABLE ' .  self::TABLE .  ' DROP COLUMN ' . $name,
             $this->rsm
         );
         $result = $result->execute();
