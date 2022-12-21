@@ -16,12 +16,9 @@ class IsolationController extends Controller
                 $this->manageDB(create: false, dbName: $dbName);
                 return $result;
             case 'update':
-                $dbName = $this->getRandomDbName();
                 // test database should be created before test
                 $encrypted = [true, false];
-                $this->manageDB(create: true, dbName: $dbName);
                 $result = $object->alterDatabaseEncryption($encrypted[array_rand($encrypted, 1)]);
-                $this->manageDB(create: false, dbName: $dbName);
                 return $result;
             case 'delete':
                 $dbName = $this->getRandomDbName();

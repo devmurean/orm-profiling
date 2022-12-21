@@ -207,6 +207,12 @@ function checkDirectoryExistence()
 function main(string $group, array $endpoints, array $options)
 {
     checkDirectoryExistence();
+    
+    // Create test_database for isolation test
+    $command = 'mysql -u ' . $options['db_username'] . ' -p' . $options['db_password'] .
+    ' -e "CREATE DATABASE IF NOT EXISTS test_database;"';
+    exec($command);
+
     echo 'Start profiling ' . $group . '...' . PHP_EOL;
     profile($group, $endpoints, $options);
     echo 'Done' . PHP_EOL;
@@ -216,7 +222,8 @@ function main(string $group, array $endpoints, array $options)
 function profile(string $group, array $endpoints, array $options): void
 {
     foreach ($endpoints[$group] as $e) {
-        if ($group !== 'isolation') {
+        if ($group === 'isolation') {
+        } else {
             execSeedingCommand($group, $options);
         }
         execAbCommand($group, $options, $e);
