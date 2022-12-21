@@ -156,7 +156,7 @@ $endpoints = [
             'value' => '/propagation/add'
         ],
         [
-            'method' => 'put',
+            'method' => 'post',
             'name' => 'update',
             'value' => '/propagation/update'
         ],
@@ -175,7 +175,7 @@ $endpoints = [
             'value' => '/isolation/add'
         ],
         [
-            'method' => 'put',
+            'method' => 'post',
             'name' => 'update',
             'value' => '/isolation/update'
         ],
