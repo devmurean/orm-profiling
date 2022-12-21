@@ -17,9 +17,8 @@ class PropagationRepository extends Repository
     public function addAttribute()
     {
         $result = $this->em->createNativeQuery(
-            'ALTER TABLE ' .
-            self::TABLE .
-            ' ADD COLUMN additional_column INT NULL',
+            'ALTER TABLE ' .  self::TABLE .
+            ' ADD COLUMN ' . $this->faker->uuid . ' INT NULL',
             $this->rsm
         );
         $result = $result->execute();

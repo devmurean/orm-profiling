@@ -11,8 +11,7 @@ class PropagationRepository extends Repository
     public function addAttribute()
     {
         $result = DB::statement(
-            'ALTER TABLE ' .
-            self::TABLE .
+            'ALTER TABLE ' .  self::TABLE .
             ' ADD COLUMN ' . $this->faker->uuid . ' INT NULL'
         );
         return response()->json(['result' => $result]);
