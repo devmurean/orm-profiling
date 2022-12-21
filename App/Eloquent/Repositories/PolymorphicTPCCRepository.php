@@ -62,7 +62,7 @@ class PolymorphicTPCCRepository extends Repository
                 $object = PermanentTPCC::find($this->randomId(max: 5000));
                 break;
             case 'contract':
-                $object = ContractTPCC::find($this->randomId(min: 5001, max: 10000));
+                $object = ContractTPCC::find($this->randomId(max: 5000));
                 break;
             case 'employee':
                 $object = EmployeeTPCC::find($this->randomId(max: 10000));
@@ -83,7 +83,7 @@ class PolymorphicTPCCRepository extends Repository
                 $object = PermanentTPCC::find($this->randomId(max: 5000));
                 break;
             case 'contract':
-                $object = ContractTPCC::find($this->randomId(min: 5001, max: 10000));
+                $object = ContractTPCC::find($this->randomId(max: 5000));
                 break;
             case 'employee':
                 $object = EmployeeTPCC::find($this->randomId(max: 10000));
@@ -102,7 +102,7 @@ class PolymorphicTPCCRepository extends Repository
                 $object = PermanentTPCC::find($this->randomId(max: 5000));
                 break;
             case 'contract':
-                $object = ContractTPCC::find($this->randomId(min: 5001, max: 10000));
+                $object = ContractTPCC::find($this->randomId(max: 5000));
                 break;
             case 'employee':
                 $object = EmployeeTPCC::find($this->randomId(max: 10000));
