@@ -300,7 +300,7 @@ function sqlDumpMapping(string $group): string
         'st' => 'orm_profiling_st.sql',
         'tpc' => 'orm_profiling_tpc.sql',
         'tpcc' => 'orm_profiling_tpcc.sql',
-        'propagation' => 'orm_profiling_isolation_propagation',
+        'propagation' => 'orm_profiling_isolation_propagation.sql',
     ];
 
     return $list[$group];
