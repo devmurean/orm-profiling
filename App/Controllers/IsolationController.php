@@ -4,28 +4,42 @@ namespace App\Controllers;
 class IsolationController extends Controller
 {
     private const METRIC = 'isolation';
+
     public function invoke($orm, $action)
     {
         $object = $this->selectORM($orm, self::METRIC);
         switch ($action) {
             case 'add':
-                $dbName = 'test_db_' . rand(10**4, 10**5-1);
+                $dbName = $this->getRandomDbName();
                 $result = $object->createDatabase($dbName);
                 // drop the database so database is not polluted
-                $command = 'mysql -u ' . $_ENV['DB_USER'] . ' -p' . $_ENV['DB_PASSWORD'] .
-                    ' -e "DROP DATABASE ' . $dbName . ';"';
-                exec($command);
+                $this->manageDB(create: false, dbName: $dbName);
                 return $result;
             case 'update':
+                $dbName = $this->getRandomDbName();
                 // test database should be created before test
                 $encrypted = [true, false];
-                return $object->alterDatabaseEncryption($encrypted[array_rand($encrypted, 1)]);
+                $this->manageDB(create: true, dbName: $dbName);
+                $result = $object->alterDatabaseEncryption($encrypted[array_rand($encrypted, 1)]);
+                $this->manageDB(create: false, dbName: $dbName);
+                return $result;
             case 'delete':
-                $dbName = 'test_db_' . rand(10**4, 10**5-1);
-                $command = 'mysql -u ' . $_ENV['DB_USER'] . ' -p' . $_ENV['DB_PASSWORD'] .
-                    ' -e "CREATE DATABASE ' . $dbName . ';"';
-                exec($command);
+                $dbName = $this->getRandomDbName();
+                $this->manageDB(create: true, dbName: $dbName);
                 return $object->deleteDatabase($dbName);
         }
+    }
+
+    private function getRandomDbName(): string
+    {
+        return 'test_db_' . rand(10**4, 10**5-1);
+    }
+
+    private function manageDB(bool $create, string $dbName): void
+    {
+        $action = $create ? 'CREATE' : 'DROP';
+        $command = 'mysql -u ' . $_ENV['DB_USER'] . ' -p' . $_ENV['DB_PASSWORD'] .
+                    ' -e "' . $action . ' DATABASE ' . $dbName . ';"';
+        exec($command);
     }
 }

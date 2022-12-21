@@ -213,22 +213,13 @@ function main(string $group, array $endpoints, array $options)
     return;
 }
 
-function profile(string $group, array $endpoints, array $options, bool $isolation = false): void
+function profile(string $group, array $endpoints, array $options): void
 {
     foreach ($endpoints[$group] as $e) {
-        if ($isolation && $e['name'] === 'update') {
-            $dbName = 'test_db_' . rand(10**4, 10**5-1);
-            $command = 'mysql -u ' . $options['db_username'] . ' -p' . $options['db_password'] .
-                ' -e "CREATE DATABASE ' . $dbName . ';"';
-            exec($command);
-            execAbCommand($group, $options, $e);
-            $command = 'mysql -u ' . $options['db_username'] . ' -p' . $options['db_password'] .
-                ' -e "DROP DATABASE ' . $dbName . ';"';
-            exec($command);
-        } else {
+        if ($group !== 'isolation') {
             execSeedingCommand($group, $options);
-            execAbCommand($group, $options, $e);
         }
+        execAbCommand($group, $options, $e);
     }
 }
 
