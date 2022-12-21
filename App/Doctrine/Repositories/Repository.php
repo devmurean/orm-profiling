@@ -25,7 +25,7 @@ class Repository
             $filename = $_SERVER['REQUEST_METHOD'] . str_replace('/', '.', $_SERVER['PATH_INFO']);
         
             $peakMemoryUsage = memory_get_peak_usage();
-            echo $filePath = realpath('.') . '/bin/memory-profiling-result/'.$filename.'.txt';
+            $filePath = realpath('.') . '/bin/memory-profiling-result/'.$filename.'.txt';
             if (!file_exists($filePath)) {
                 touch($filePath);
             }

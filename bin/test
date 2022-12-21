@@ -188,10 +188,25 @@ $endpoints = [
 
 ];
 
+function checkDirectoryExistence()
+{
+    echo 'Checking directories...' . PHP_EOL;
+    if (!file_exists('memory-profiling-result')) {
+        mkdir('memory-profiling-result');
+    }
+    if (!file_exists('xdebug-profiling-result')) {
+        mkdir('xdebug-profiling-result');
+    }
+    if (!file_exists('load-profiling-result')) {
+        mkdir('load-profiling-result');
+    }
+}
+
 // Example command
 // 'ab -k -n 100 -c 10 -p data.txt -T application/json localhost:8000/doctrine/user > profiling.txt'
 function main(string $group, array $endpoints, array $options)
 {
+    checkDirectoryExistence();
     echo 'Start profiling ' . $group . '...' . PHP_EOL;
     profile($group, $endpoints, $options);
     echo 'Done' . PHP_EOL;
@@ -251,12 +266,13 @@ function execAbCommand(string $group, array $options, array $e): void
     $host = $options['host'];
     
     $endpoint = $host . '/' . $orm . $e['value'];
-    $memory_log = $options['memory_log'] === false ? 'memory.' : '';
-    $xdebug = $options['xdebug'] === false ? 'xdebug.' : '';
+    $memory_log = array_key_exists('memory_log', $options) ? 'memory.' : '';
+    $xdebug = array_key_exists('xdebug', $options) ? 'xdebug.' : '';
     // Command Builder
     echo 'Profiling ' . '['.$e['name'].'] ' . $endpoint . '...' . PHP_EOL;
     $command = 'ab -k -n ' . $n . ' -c ' . $c . ' ';
     $command .= $e['method'] === 'post' ? '-p data.txt -T application/json' : '';
+    $command .= $e['method'] === 'put' ? '-u data.txt -T application/json' : '';
     $command .= ' ' . $endpoint;
     $command .= ' > ' . getOutputFolder($options) .
          '/' . $group . '.ab.' . $memory_log . $xdebug . $e['name'] . '.' . time() . '.txt';
