@@ -10,9 +10,10 @@ class PropagationRepository extends Repository
 
     public function addAttribute()
     {
+        $columnName = 'c_' . rand(10**7, 10**8-1);
         $result = DB::statement(
             'ALTER TABLE ' .  self::TABLE .
-            ' ADD COLUMN ' . $this->faker->uuid . ' INT NULL'
+            ' ADD COLUMN ' . $columnName . ' INT NULL'
         );
         return response()->json(['result' => $result]);
     }

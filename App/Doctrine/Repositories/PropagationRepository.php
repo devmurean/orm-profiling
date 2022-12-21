@@ -16,9 +16,10 @@ class PropagationRepository extends Repository
 
     public function addAttribute()
     {
+        $columnName = 'c_' . rand(10**7, 10**8-1);
         $result = $this->em->createNativeQuery(
             'ALTER TABLE ' .  self::TABLE .
-            ' ADD COLUMN ' . $this->faker->uuid . ' INT NULL',
+            ' ADD COLUMN ' . $columnName . ' INT NULL',
             $this->rsm
         );
         $result = $result->execute();
