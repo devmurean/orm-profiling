@@ -1,7 +1,6 @@
 #!/usr/bin/env php
 <?php
 $options = getopt('', [
-    'concurrent:',
     'db:',
     'db_password:',
     'db_username:',
@@ -9,7 +8,7 @@ $options = getopt('', [
     'group:',
     'help',
     'host:',
-    'number:',
+    'record:',
     'orm:',
     'memory_log',
     'xdebug',
@@ -18,8 +17,7 @@ if (array_key_exists('help', $options) && $options['help'] === false) {
     echo 'php test [commands] ' . PHP_EOL .
     'Every command is mandatory ' .
     PHP_EOL . 'Commands:' . PHP_EOL .
-    '    [--number int]             Number of request' . PHP_EOL .
-    '    [--concurrent int]         Number of concurrent request' . PHP_EOL .
+    '    [--record int]             Number of record in database' . PHP_EOL .
     '    [--orm doctrine|eloquent]  ORM selection, either Doctrine or Eloquent ' . PHP_EOL .
     '    [--db string]              Database name' . PHP_EOL .
     '    [--db_password string]     Database password' . PHP_EOL .
@@ -208,7 +206,7 @@ function main(string $group, array $endpoints, array $options)
 {
     checkDirectoryExistence();
     
-    // Create test_database for isolation test
+    // Create test_database for propagation test
     $command = 'mysql -u ' . $options['db_username'] . ' -p' . $options['db_password'] .
     ' -e "CREATE DATABASE IF NOT EXISTS test_database;"';
     exec($command);
@@ -221,8 +219,11 @@ function main(string $group, array $endpoints, array $options)
 
 function profile(string $group, array $endpoints, array $options): void
 {
+    if (!in_array($group, ['isolation', 'propagation'])) {
+        execSeedingCommand($group, $options);
+    }
     foreach ($endpoints[$group] as $e) {
-        if ($group !== 'isolation') {
+        if ($group === 'propagation') {
             execSeedingCommand($group, $options);
         }
         execAbCommand($group, $options, $e);
@@ -242,7 +243,7 @@ function execSeedingCommand(string $group, array $options): void
      
     $command = 'mysql -u ' . $options['db_username']
         . ' --password=' . $options['db_password'] . ' '
-        . $options['db'] . ' < ./mysql-dump/' . sqlDumpMapping($group);
+        . $options['db'] . ' < ./mysql-dump/' . sqlDumpMapping($group, $options['record']);
 
     exec($command);
 }
@@ -257,22 +258,21 @@ function execSeedingCommand(string $group, array $options): void
  */
 function execAbCommand(string $group, array $options, array $e): void
 {
-    $n = $options['number'];
-    $c = $options['concurrent'];
     $orm = $options['orm'];
     $host = $options['host'];
     
     $endpoint = $host . '/' . $orm . $e['value'];
+    $requestCount = array_key_exists('xdebug', $options) ? 1 : 10;
     $memory_log = array_key_exists('memory_log', $options) ? 'memory.' : '';
     $xdebug = array_key_exists('xdebug', $options) ? 'xdebug.' : '';
     // Command Builder
     echo 'Profiling ' . '['.$e['name'].'] ' . $endpoint . '...' . PHP_EOL;
-    $command = 'ab -k -n ' . $n . ' -c ' . $c . ' ';
+    $command = 'ab -k -n ' . $requestCount . ' -c 1 ';
     $command .= $e['method'] === 'post' ? '-p data.txt -T application/json' : '';
     $command .= $e['method'] === 'put' ? '-u data.txt -T application/json' : '';
     $command .= ' ' . $endpoint;
     $command .= ' > ' . getOutputFolder($options) .
-         '/' . $group . '.ab.' . $memory_log . $xdebug . $e['name'] . '.' . time() . '.txt';
+         '/' . $group . '.' . $options['record'] . '.ab.' . $memory_log . $xdebug . $e['name'] . '.' . time() . '.txt';
 
     // Command Execution
     exec($command);
@@ -290,17 +290,9 @@ function getOutputFolder(array $options)
     }
 }
 
-function sqlDumpMapping(string $group): string
+function sqlDumpMapping(string $group, $recordCount): string
 {
-    $list = [
-        'crud' => 'orm_profiling_crud.sql',
-        'st' => 'orm_profiling_st.sql',
-        'tpc' => 'orm_profiling_tpc.sql',
-        'tpcc' => 'orm_profiling_tpcc.sql',
-        'propagation' => 'orm_profiling_isolation_propagation.sql',
-    ];
-
-    return $list[$group];
+    return $recordCount . '_' . $group . '.sql';
 }
 
 main(group: $options['group'], endpoints: $endpoints, options: $options);

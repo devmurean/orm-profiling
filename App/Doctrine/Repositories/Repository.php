@@ -22,7 +22,7 @@ class Repository
     public function __destruct()
     {
         if ((bool) $_ENV['LOG_MEMORY_USAGE'] === true) {
-            $filename = $_SERVER['REQUEST_METHOD'] . str_replace('/', '.', $_SERVER['PATH_INFO']);
+            $filename = $_SERVER['REQUEST_METHOD'] . str_replace('/', '.', $_SERVER['REQUEST_URI']);
         
             $peakMemoryUsage = memory_get_peak_usage();
             $filePath = realpath('.') . '/bin/memory-profiling-result/'.$filename.'.txt';
