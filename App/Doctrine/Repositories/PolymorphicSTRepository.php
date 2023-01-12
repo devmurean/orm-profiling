@@ -8,12 +8,12 @@ class PolymorphicSTRepository extends Repository
     public function createOperation()
     {
         $employee = new EmployeeST;
-        $type = $this->faker->randomElement(['permanent', 'contract']);
+     
         $employee->init(
             name:  $this->faker->name,
             address: $this->faker->address,
-            nik: $type === 'permanent' ? rand(10**5, 10**6-1) : null,
-            contract_duration: $type === 'contract' ? rand(1, 5) :null,
+            nik: rand(10**5, 10**6-1),
+            contract_duration: null,
         );
         $this->em->persist($employee);
         $this->em->flush();

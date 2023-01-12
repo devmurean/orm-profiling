@@ -8,15 +8,11 @@ class PolymorphicSTRepository extends Repository
 {
     public function createOperation()
     {
-        $selectedEmployeeType = array_rand([
-            'permanent', 'contract'
-        ], 1);
-
         $fills = [
             'name' => $this->faker->name,
             'address' => $this->faker->address(),
-            'nik' => $selectedEmployeeType === 'permanent' ? rand(10000, 99999) : null,
-            'contract_duration' => $selectedEmployeeType === 'contract' ? rand(1, 5) : null
+            'nik' => rand(10000, 99999),
+            'contract_duration' => null
         ];
 
         $employee = EmployeeST::create($fills);
@@ -33,7 +29,7 @@ class PolymorphicSTRepository extends Repository
     {
         try {
             /** @var EmployeeST */
-            $employee = EmployeeST::find($this->randomId(max: 10000));
+            $employee = EmployeeST::find($this->randomId());
             $employee->fill([
                 'name' => $this->faker->name,
                 'address' => $this->faker->address
@@ -47,7 +43,7 @@ class PolymorphicSTRepository extends Repository
     public function deleteOperation()
     {
         /** @var EmployeeST */
-        $employee = EmployeeST::find($this->randomId(max: 10000));
+        $employee = EmployeeST::find($this->randomId());
         $employee->delete();
         return response()->json([
             'employee' => $employee
@@ -55,7 +51,7 @@ class PolymorphicSTRepository extends Repository
     }
     public function lookupOperation()
     {
-        $employee = EmployeeST::find($this->randomId(max: 10000));
+        $employee = EmployeeST::find($this->randomId());
         return response()->json([ 'employee' => $employee ]);
     }
 }

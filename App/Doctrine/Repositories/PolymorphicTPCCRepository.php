@@ -9,34 +9,26 @@ class PolymorphicTPCCRepository extends Repository
 {
     public function createOperation()
     {
-        $selection = $this->faker->randomElement(['permanent', 'contract']);
         $name = $this->faker->name;
         $address = $this->faker->address;
 
         $employee = new EmployeeTPCC;
         $employee->init(name: $name, address: $address);
-
-        $object = null;
-        if ($selection === 'permanent') {
-            $object = new PermanentTPCC;
-            $object->init($name, $address, rand(10**5, 10**6-1));
-        } else {
-            $object = new ContractTPCC;
-            $object->init($name, $address, rand(1, 5));
-        }
+       
+        $object = new PermanentTPCC;
+        $object->init($name, $address, rand(10**5, 10**6-1));
 
         $this->em->persist($employee);
         $this->em->persist($object);
         $this->em->flush();
         return response()->json([
             'employee' => $employee->serialize(),
-            $selection => $object->serialize()
+            'permanent' => $object->serialize()
         ]);
     }
     public function readOperation()
     {
-        $selection = $this->faker->randomElement(['permanent', 'contract']);
-        $entityClass = ($selection === 'permanent') ? PermanentTPCC::class : ContractTPCC::class;
+        $entityClass = PermanentTPCC::class;
         $repository = $this->em->getRepository($entityClass)->findAll();
         return response()->json([
             'employees' => $this->serializeCollection($repository)
@@ -44,16 +36,12 @@ class PolymorphicTPCCRepository extends Repository
     }
     public function updateOperation()
     {
-        $selection = $this->faker->randomElement(['permanent', 'contract']);
-        $entityClass = ($selection === 'permanent') ? PermanentTPCC::class : ContractTPCC::class;
-        $employee = $this->randomEntity($entityClass, random_max: 2000);
+        $entityClass = PermanentTPCC::class;
+        $employee = $this->randomEntity($entityClass);
         $name = $this->faker->name;
         $address = $this->faker->address;
-        if ($selection === 'permanent') {
-            $employee->init($name, $address, rand(10**5, 10**6-1));
-        } else {
-            $employee->init($name, $address, rand(1, 5));
-        }
+        $employee->init($name, $address, rand(10**5, 10**6-1));
+
         $this->em->persist($employee);
         $this->em->flush();
         return response()->json([
@@ -62,9 +50,8 @@ class PolymorphicTPCCRepository extends Repository
     }
     public function deleteOperation()
     {
-        $selection = $this->faker->randomElement(['permanent', 'contract']);
-        $entityClass = ($selection === 'permanent') ? PermanentTPCC::class : ContractTPCC::class;
-        $employee = $this->randomEntity($entityClass, random_max: 2000);
+        $entityClass = PermanentTPCC::class;
+        $employee = $this->randomEntity($entityClass);
         $this->em->remove($employee);
         $this->em->flush();
 
@@ -74,11 +61,10 @@ class PolymorphicTPCCRepository extends Repository
     }
     public function lookupOperation()
     {
-        $selection = $this->faker->randomElement(['permanent', 'contract']);
-        $entityClass = ($selection === 'permanent') ? PermanentTPCC::class : ContractTPCC::class;
+        $entityClass = PermanentTPCC::class;
        
         return response()->json([
-            'employee' => $this->randomEntity($entityClass, random_max: 2000)->serialize()
+            'employee' => $this->randomEntity($entityClass)->serialize()
         ]);
     }
 }

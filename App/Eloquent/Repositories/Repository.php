@@ -30,7 +30,7 @@ class Repository
         }
     }
 
-    protected function randomId(int $min = 1, int $max = 1000): int
+    protected function randomId(int $min = 1, int $max = 100): int
     {
         return rand($min, $max);
     }

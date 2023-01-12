@@ -20,10 +20,7 @@ class CRUDRepository extends Repository
 
     public function readOperation()
     {
-        $users = User::all();
-        return response()->json([
-            'user' => $users
-        ]);
+        return response()->json([ 'user' => User::all() ]);
     }
 
     public function updateOperation()
@@ -33,13 +30,9 @@ class CRUDRepository extends Repository
             $user->name = $this->faker->name;
             $user->saveOrFail();
 
-            return response()->json([
-                'user' => $user
-            ]);
+            return response()->json([ 'user' => $user ]);
         } catch (\Throwable $th) {
-            return response()->json([
-                'user' => $th->getMessage()
-            ]);
+            return response()->json([ 'user' => $th->getMessage() ]);
         }
     }
 
@@ -47,9 +40,7 @@ class CRUDRepository extends Repository
     {
         $user = User::find($this->randomId());
         $user->delete();
-        return response()->json([
-            'user' => $user
-        ]);
+        return response()->json([ 'user' => $user ]);
     }
 
     public function lookupOperation()

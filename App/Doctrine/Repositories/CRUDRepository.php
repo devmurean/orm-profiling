@@ -23,7 +23,7 @@ class CRUDRepository extends Repository
     }
     public function updateOperation()
     {
-        $user = $this->randomEntity(User::class, random_max: 1000);
+        $user = $this->randomEntity(User::class);
         $user->init(
             name: $this->faker->name,
             email: $this->faker->uuid . '@example.com',
@@ -38,7 +38,7 @@ class CRUDRepository extends Repository
     }
     public function deleteOperation()
     {
-        $user = $this->randomEntity(User::class, random_max: 1000);
+        $user = $this->randomEntity(User::class);
         $this->em->remove($user);
         $this->em->flush();
 
@@ -56,7 +56,7 @@ class CRUDRepository extends Repository
     public function lookupOperation()
     {
         /** @var User */
-        $user = $this->randomEntity(User::class, random_max: 1000);
+        $user = $this->randomEntity(User::class);
         return response()->json([
             'user' => $user->serialize(withRelationship: true)
         ]);

@@ -9,23 +9,13 @@ class PolymorphicTPCRepository extends Repository
 {
     public function createOperation()
     {
-        $selection = $this->faker->randomElement(['permanent', 'contract']);
-        $employee = null;
-        if ($selection === 'permanent') {
-            $employee = new PermanentTPC;
-            $employee->init(
-                name: $this->faker->name,
-                address: $this->faker->address,
-                nik: rand(10**5, 10**6-1),
-            );
-        } else {
-            $employee = new ContractTPC;
-            $employee->init(
-                name: $this->faker->name,
-                address: $this->faker->address,
-                contract_duration: rand(1, 5),
-            );
-        }
+        $employee = new PermanentTPC;
+        $employee->init(
+            name: $this->faker->name,
+            address: $this->faker->address,
+            nik: rand(10**5, 10**6-1),
+        );
+        
         $this->em->persist($employee);
         $this->em->flush();
 
