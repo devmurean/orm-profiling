@@ -27,13 +27,13 @@ class PropagationRepository extends Repository
     }
     public function updateAttribute() // update position
     {
-        $columns = ['id', 'first_name', 'last_name', 'address', 'email'];
+        $columns = ['id', 'first_name', 'last_name', 'email'];
         $selectedColumn = $this->faker->randomElement($columns);
 
         $result = $this->em->createNativeQuery(
             'ALTER TABLE ' . self::TABLE .
-            ' CHANGE COLUMN additional_column additional_column' .
-            ' INT NULL AFTER `' . $selectedColumn . '`',
+            ' CHANGE COLUMN address address' .
+            ' TEXT NULL AFTER `' . $selectedColumn . '`',
             $this->rsm
         );
         $result = $result->execute();
