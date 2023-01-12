@@ -1,0 +1,103 @@
+#!/usr/bin/env php
+<?php
+function SD($arr)
+{
+    $variance = 0.0;
+
+    // calculating mean using array_sum() method
+    $average = average($arr);
+
+    foreach ($arr as $i) {
+        // sum of squares of differences between 
+        // all numbers and means.
+        $variance += pow(($i - $average), 2);
+    }
+
+    return (float)sqrt($variance/count($arr));
+}
+
+function SE($SD, $arr)
+{
+    return $SD / sqrt(count($arr));
+}
+
+function average($arr)
+{
+    return array_sum($arr)/count($arr);
+}
+
+function getStat($arr)
+{
+    $SD = SD($arr);
+    $SE = SE($SD, $arr);
+    $mean = average($arr);
+    $realMean = average(array_filter($arr, fn ($x) => $x <= $mean + $SD && $x >= $mean - $SD));
+    return [
+        'me' => $mean,
+        'rm' => $realMean, // mean after exclude outlier
+        'sd' => $SD,
+        'se' => $SE,
+    ];
+}
+
+
+function readFiles()
+{
+    $dir = 'load-profiling-result';
+    $documentList = array_values(array_diff(scandir($dir), array('..', '.')));
+    $result = [];
+    
+    foreach ($documentList as $d) {
+        $fileLines = file($dir . '/'. $d);
+        
+        list($group, $number, $ab, $action) = explode('.', $d); // explode file title by dot (.)
+       
+        $toArray = [];
+        foreach ($fileLines as $line) {
+            $separatedLine = explode(':', $line);
+            if (array_key_exists(1, $separatedLine)) {
+                $toArray[$separatedLine[0]] = trim($separatedLine[1]) ?? '';
+            }
+        }
+        
+        $rps = explode(' ', $toArray['Requests per second']);
+        $tpr = explode(' ', $toArray['Time per request']);
+        $orm = explode(' ', trim(str_replace('/', ' ', $toArray['Document Path'])))[0];
+        
+        $result[$action][$group][$orm][$number]['rps'][] = $rps[0];
+        $result[$action][$group][$orm][$number]['tpr'][] = $tpr[0];
+    
+        $result[$action][$group][$orm][$number]['stat'] = [
+            'rps' => getStat($result[$action][$group][$orm][$number]['rps']),
+            'tpr' => getStat($result[$action][$group][$orm][$number]['tpr']),
+        ];
+    }
+    return $result;
+}
+
+function writeToFile($arr, $filename = 'scanned-load-result.txt')
+{
+    $text = '';
+    foreach ($arr as $actionKey => $action) {
+        $text .= '---------------------------------------------' . PHP_EOL;
+        foreach ($action as $groupKey => $group) {
+            $text .= '* ' . $actionKey .' - ' . $groupKey . PHP_EOL;
+            foreach ($group as $ormKey => $orm) {
+                $rps = '';
+                $tpr = '';
+                foreach ($orm as $numberKey => $number) {
+                    $rps .= number_format($number['stat']['rps']['rm'], 3, ',', '.') . ' ';
+                    $tpr .= number_format($number['stat']['tpr']['rm'], 3, ',', '.') . ' ';
+                }
+                $text .= $ormKey . ' [rps] '. "\t" . $rps . PHP_EOL;
+                $text .= $ormKey . ' [tpr] '. "\t" . $tpr . PHP_EOL;
+                $text .= $ormKey === 'doctrine' ? '|' . PHP_EOL : '';
+            }
+            $text .= PHP_EOL;
+        }
+    }
+    file_put_contents($filename, $text);
+    echo 'Result is successfully written to ' . $filename;
+}
+
+writeToFile(readFiles());

@@ -4,7 +4,6 @@ $options = getopt('', [
     'db:',
     'db_password:',
     'db_username:',
-    'folder:',
     'group:',
     'help',
     'host:',
@@ -260,19 +259,21 @@ function execAbCommand(string $group, array $options, array $e): void
 {
     $orm = $options['orm'];
     $host = $options['host'];
+    $isXdebugActive = array_key_exists('xdebug', $options);
+    $isMemoryLogActive = array_key_exists('memory_log', $options);
     
     $endpoint = $host . '/' . $orm . $e['value'];
-    $requestCount = array_key_exists('xdebug', $options) ? 1 : 10;
-    $memory_log = array_key_exists('memory_log', $options) ? 'memory.' : '';
-    $xdebug = array_key_exists('xdebug', $options) ? 'xdebug.' : '';
+    $requestCount = $isXdebugActive || $isMemoryLogActive ? 1 : 10;
     // Command Builder
     echo 'Profiling ' . '['.$e['name'].'] ' . $endpoint . '...' . PHP_EOL;
     $command = 'ab -k -n ' . $requestCount . ' -c 1 ';
     $command .= $e['method'] === 'post' ? '-p data.txt -T application/json' : '';
     $command .= $e['method'] === 'put' ? '-u data.txt -T application/json' : '';
     $command .= ' ' . $endpoint;
-    $command .= ' > ' . getOutputFolder($options) .
-         '/' . $group . '.' . $options['record'] . '.ab.' . $memory_log . $xdebug . $e['name'] . '.' . time() . '.txt';
+    $command .= (!$isXdebugActive && !$isMemoryLogActive) // no file writing for xdebug or memory
+        ? ' > ' . getOutputFolder($options) .
+          '/' . $group . '.' . $options['record'] . '.ab.' . $e['name'] . '.' . time() . '.txt'
+        : '';
 
     // Command Execution
     exec($command);
