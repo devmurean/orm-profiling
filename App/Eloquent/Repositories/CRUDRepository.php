@@ -27,7 +27,11 @@ class CRUDRepository extends Repository
     {
         try {
             $user = User::find($this->randomId());
-            $user->name = $this->faker->name;
+            $user->fill([
+                'name' => $this->faker->name,
+                'email' => $this->faker->uuid . '@example.com',
+                'password' => $this->faker->password(),
+            ]);
             $user->saveOrFail();
 
             return response()->json([ 'user' => $user ]);

@@ -12,7 +12,7 @@ class CRUDRepository extends Repository
         $user->init(
             name: $this->faker->name,
             email: $this->faker->uuid . '@example.com',
-            password: 'password'
+            password: $this->faker->password()
         );
         $this->em->persist($user);
         $this->em->flush();
@@ -27,7 +27,7 @@ class CRUDRepository extends Repository
         $user->init(
             name: $this->faker->name,
             email: $this->faker->uuid . '@example.com',
-            password: 'password'
+            password: $this->faker->password()
         );
         $this->em->persist($user);
         $this->em->flush();
