@@ -18,10 +18,12 @@ $commands = [];
 foreach ($orms as $orm) {
     foreach ($groups as $group) {
         foreach ($records as $record) {
+            $xdebug = $isXdebugActive ? '--xdebug' : '';
+            $memory = $isMemoryLogActive ? '--memory_log' : '';
             $commands[] = 'php test --record '.$record.' --db "'.$options['db'].'" '
             . '--db_password "'.$options['db_password'].'" --db_username "'.$options['db_username'].'" '
             . '--host "localhost:8000" '
-            . '--orm '.$orm.' --group "'.$group.'"';
+            . '--orm '.$orm.' --group "'.$group.'" ' . $xdebug . ' ' . $memory;
         }
     }
 }
