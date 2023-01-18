@@ -12,7 +12,7 @@ $isMemoryLogActive = array_key_exists('memory_log', $options);
 
 $orms = ['doctrine','eloquent'];
 $groups = ['crud', 'st', 'tpc', 'tpcc', 'propagation', 'isolation'];
-$records = [100, 1000, 10000, 100000];
+$records = (!$isXdebugActive && !$isMemoryLogActive) ? [100, 1000, 10000, 100000] : [100];
 
 $commands = [];
 foreach ($orms as $orm) {
