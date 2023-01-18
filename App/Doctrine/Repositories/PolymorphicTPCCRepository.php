@@ -28,7 +28,7 @@ class PolymorphicTPCCRepository extends Repository
     }
     public function readOperation()
     {
-        $entityClass = PermanentTPCC::class;
+        $entityClass = EmployeeTPCC::class;
         $repository = $this->em->getRepository($entityClass)->findAll();
         return response()->json([
             'employees' => $this->serializeCollection($repository)
@@ -36,11 +36,11 @@ class PolymorphicTPCCRepository extends Repository
     }
     public function updateOperation()
     {
-        $entityClass = PermanentTPCC::class;
+        $entityClass = EmployeeTPCC::class;
         $employee = $this->randomEntity($entityClass);
         $name = $this->faker->name;
         $address = $this->faker->address;
-        $employee->init($name, $address, rand(10**5, 10**6-1));
+        $employee->init($name, $address);
 
         $this->em->persist($employee);
         $this->em->flush();
@@ -50,7 +50,7 @@ class PolymorphicTPCCRepository extends Repository
     }
     public function deleteOperation()
     {
-        $entityClass = PermanentTPCC::class;
+        $entityClass = EmployeeTPCC::class;
         $employee = $this->randomEntity($entityClass);
         $this->em->remove($employee);
         $this->em->flush();
@@ -61,7 +61,7 @@ class PolymorphicTPCCRepository extends Repository
     }
     public function lookupOperation()
     {
-        $entityClass = PermanentTPCC::class;
+        $entityClass = EmployeeTPCC::class;
        
         return response()->json([
             'employee' => $this->randomEntity($entityClass)->serialize()
