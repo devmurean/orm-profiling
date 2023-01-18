@@ -43,7 +43,7 @@ class PolymorphicTPCRepository extends Repository
     public function updateOperation()
     {
         DB::beginTransaction();
-        $object = PermanentTPC::with('employment')->find($this->randomId());
+        $object = PermanentTPC::with('employment')->find($this->randomId(max: 50));
         
         $object->fill([
             'nik' => rand(10**5, 10**6-1),
