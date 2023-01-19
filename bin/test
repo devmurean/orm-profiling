@@ -263,7 +263,7 @@ function execAbCommand(string $group, array $options, array $e): void
     $isMemoryLogActive = array_key_exists('memory_log', $options);
     
     $endpoint = $host . '/' . $orm . $e['value'];
-    $requestCount = $isXdebugActive || $isMemoryLogActive ? 1 : 10;
+    $requestCount = $isXdebugActive || $isMemoryLogActive ? 1 : 1;
     // Command Builder
     echo 'Profiling ' . '['.$e['name'].'] ' . $endpoint . '...' . PHP_EOL;
     $command = 'ab -k -n ' . $requestCount . ' -c 1 ';
