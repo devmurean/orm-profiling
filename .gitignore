@@ -26,3 +26,4 @@ bin/load-profiling-result/*
 bin/memory-profiling-result/*
 bin/xdebug-profiling-result/*
 bin/scanned-load-result.txt
+bin/inputs/*

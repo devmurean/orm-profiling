@@ -1,0 +1,255 @@
+#!/usr/bin/env php
+
+<?php
+require "../vendor/autoload.php";
+
+use Faker\Factory;
+use Faker\Generator;
+
+class Profiler
+{
+    /** @var Generator Faker instance */
+    private Generator $faker;
+
+    private string $host;
+    private string $db;
+    private string $db_username;
+    private string $db_password;
+    private bool $xdebug;
+    private bool $memory;
+
+    /** @var int How many iteration a test is done */
+    private int $n;
+
+    private array $endpoints = [
+        // CRUD Group
+        'crud' => [
+            ['method' => 'get', 'name' => 'read', 'value' => '/user'],
+            ['method' => 'get', 'name' => 'lookup', 'value' => '/user/lookup'],
+            ['method' => 'post', 'name' => 'create', 'value' => '/user'],
+            ['method' => 'put', 'name' => 'update', 'value' => '/user'],
+            ['method' => 'post', 'name' => 'delete', 'value' => '/user/delete'],
+        ],
+
+        // ST Group
+        'st' => [
+            ['method' => 'get', 'name' => 'read', 'value' => '/st'],
+            ['method' => 'get', 'name' => 'lookup', 'value' => '/st/lookup'],
+            ['method' => 'post', 'name' => 'create', 'value' => '/st'],
+            ['method' => 'put', 'name' => 'update', 'value' => '/st'],
+            ['method' => 'post', 'name' => 'delete', 'value' => '/st/delete'],
+        ],
+
+        // TPC Group
+        'tpc' => [
+            ['method' => 'get', 'name' => 'read', 'value' => '/tpc'],
+            ['method' => 'get', 'name' => 'lookup', 'value' => '/tpc/lookup'],
+            ['method' => 'post', 'name' => 'create', 'value' => '/tpc'],
+            ['method' => 'put', 'name' => 'update', 'value' => '/tpc'],
+            ['method' => 'post', 'name' => 'delete', 'value' => '/tpc/delete'],
+        ],
+
+        // TPCC Group
+        'tpcc' => [
+            ['method' => 'get', 'name' => 'read', 'value' => '/tpcc'],
+            ['method' => 'get', 'name' => 'lookup', 'value' => '/tpcc/lookup'],
+            ['method' => 'post', 'name' => 'create', 'value' => '/tpcc'],
+            ['method' => 'put', 'name' => 'update', 'value' => '/tpcc'],
+            ['method' => 'post', 'name' => 'delete', 'value' => '/tpcc/delete'],
+        ],
+
+        // Propagation Group
+        'propagation' => [
+            ['method' => 'post', 'name' => 'create', 'value' => '/propagation/add'],
+            ['method' => 'post', 'name' => 'update', 'value' => '/propagation/update'],
+            ['method' => 'post', 'name' => 'delete', 'value' => '/propagation/delete'],
+        ],
+
+        // Isolation Group
+        // 'isolation' => [
+        //     [
+        //         'method' => 'post',
+        //         'name' => 'create',
+        //         'value' => '/isolation/add'
+        //     ],
+        //     [
+        //         'method' => 'post',
+        //         'name' => 'update',
+        //         'value' => '/isolation/update'
+        //     ],
+        //     [
+        //         'method' => 'post',
+        //         'name' => 'delete',
+        //         'value' => '/isolation/delete'
+        //     ],
+        // ],
+
+    ];
+
+    /** @var array Record count in related database table */
+    private array $records = [100, 1000, 10000, 100000];
+
+    private array $orms = ['doctrine', 'eloquent'];
+
+    public function __construct(string $host, string $db, string $db_username, string $db_password, int $n, bool $xdebug = false, bool $memory = false)
+    {
+        $this->faker = Factory::create();
+        $this->host = $host;
+        $this->db = $db;
+        $this->db_username = $db_username;
+        $this->db_password = $db_password;
+        $this->n = $n;
+        $this->xdebug = $xdebug;
+        $this->memory = $memory;
+    }
+
+    private function seeding(string $group, int $recordCount)
+    {
+        // e.g. preparing database for <<CRUD>> profiling with <<100>> records
+        echo 'Preparing database for ' . $group . ' profiling with ' . $recordCount . ' records...' . PHP_EOL;
+
+        $dumpFilePath = './mysql-dump/' . $recordCount . '_' . $group . '.sql';
+        $command = "mysql -u {$this->db_username} --password={$this->db_password} {$this->db} < {$dumpFilePath}";
+        // $command = 'mysql -u ' . $this->db_username . ' --password=' . $this->db_password . ' ' . $this->db . ' < ' . $dumpFilePath;
+
+        exec($command);
+    }
+
+    private function writeToFile(string $target, array $data)
+    {
+        $data = json_encode($data);
+        $f = fopen($target, 'w');
+        fwrite($f, $data);
+        fclose($f);
+    }
+
+    private function checkDirectoryExistence()
+    {
+        $this->sentence('Checking directories');
+        if (!file_exists('memory-profiling-result')) {
+            mkdir('memory-profiling-result');
+        }
+        if (!file_exists('xdebug-profiling-result')) {
+            mkdir('xdebug-profiling-result');
+        }
+        if (!file_exists('load-profiling-result')) {
+            mkdir('load-profiling-result');
+        }
+        if (!file_exists('inputs')) {
+            mkdir('inputs');
+        }
+        $this->sentence('Directories check done');
+    }
+
+    private function getOutputFolder()
+    {
+        if ($this->memory) {
+            return 'memory-profiling-result';
+        } elseif ($this->xdebug) {
+            return 'xdebug-profiling-result';
+        } else {
+            return 'load-profiling-result';
+        }
+    }
+
+    /**
+     * Profile endpoints within certain group
+     *
+     * @param string $group Name of group. e.g crud, st, tpc, tpcc, or propagation
+     * @param array $data Collection of data that will get impacted in profiling process
+     * @return void
+     */
+    public function profile(string $group, array $data): void
+    {
+        $this->checkDirectoryExistence();
+
+        foreach ($this->records as $record) {
+            $this->sentence("Seeding {$record} database record for {$group} group");
+            $this->seeding($group, $record);
+            $this->sentence("Seeding done");
+
+            $this->sentence("Profiling {$group} group with {$record} database record");
+
+            foreach ($this->orms as $orm) {
+                $this->sentence("Running Apache Benchmark commands for {$orm} with {$this->n} iterations for each endpoint");
+                foreach ($this->endpoints[$group] as $e) {
+                    for ($i = 0; $i < $this->n; $i++) {
+                        $iterationNumber = $i + 1;
+                        $inputFileName = "inputs/{$group}.json";
+                        if (in_array($e['name'], ['update', 'create'])) {
+                            $this->writeToFile($inputFileName, $data[$i]);
+                        }
+                        $command = 'ab -k -n 1 -c 1 ';
+                        $command .= $e['method'] === 'post' ? '-p ' : '';
+                        $command .= $e['method'] === 'put' ? '-u ' : '';
+                        $command .= in_array($e['method'], ['post', 'put']) ? "{$inputFileName} -T application/json " : '';
+                        $command .= "{$this->host}/{$orm}{$e['value']}";
+                        // Add record ID as route parameter
+                        $command .= in_array($e['name'], ['lookup', 'update', 'delete']) ? "/{$i}" : '';
+                        $command .= $this->memory ? '?memory=log' : '';
+
+                        $timestamp = time();
+                        $command .= " > {$this->getOutputFolder()}/{$group}.{$record}.ab.{$e['name']}.{$timestamp}.txt";
+
+                        exec($command);
+                        $this->sentence("Group: {$group}, Endpoint: {$e['name']}, iteration {$iterationNumber} done");
+                    }
+                    $this->sentence('---');
+                }
+            }
+
+            $this->sentence("Profiling {$group} group with {$record} database record done");
+        }
+        $this->sentence("Profiling {$group} group done");
+    }
+
+    private function sentence(string $sentence = '')
+    {
+        echo $sentence . '...' . PHP_EOL;
+    }
+
+    /**
+     * Collect data based on closure result
+     *
+     * @param Closure $callback
+     * @param integer $n
+     * @return array
+     */
+    private function collectData(Closure $callback): array
+    {
+        $data = [];
+        for ($i = 0; $i < $this->n; $i++) {
+            $data[] = $callback();
+        }
+        return $data;
+    }
+
+    public function crud()
+    {
+        $data = $this->collectData(fn () => [
+            'name' => $this->faker->name,
+            'email' => $this->faker->uuid() . '@example.com'
+        ]);
+
+        $this->profile('crud', $data);
+    }
+}
+
+
+/** @var array Command line options */
+$options = getopt('', [
+    'db:',
+    'db_password:',
+    'db_username:',
+    'host:'
+]);
+
+$profiler = new Profiler(
+    host: $options['host'],
+    db: $options['db'],
+    db_username: $options['db_username'],
+    db_password: $options['db_password'],
+    n: 10
+);
+
+$profiler->crud();
