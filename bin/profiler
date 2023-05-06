@@ -226,12 +226,47 @@ class Profiler
 
     public function crud()
     {
-        $data = $this->collectData(fn () => [
+        $this->profile('crud', $this->collectData(fn () => [
             'name' => $this->faker->name,
             'email' => $this->faker->uuid() . '@example.com'
-        ]);
+        ]));
+    }
 
-        $this->profile('crud', $data);
+    public function st()
+    {
+        $this->profile('st', $this->collectData(fn () => [
+            'name' => $this->faker->name,
+            'address' => $this->faker->address,
+            'nik' => rand(10 ** 5, 10 ** 6 - 1),
+            'contract_duration' => 1,
+        ]));
+    }
+
+    public function tpc()
+    {
+        $this->profile('tpc', $this->collectData(fn () => [
+            'name' => $this->faker->name,
+            'address' => $this->faker->address,
+            'nik' => rand(10 ** 5, 10 ** 6 - 1),
+        ]));
+    }
+
+    public function tpcc()
+    {
+        $this->profile('tpcc', $this->collectData(fn () => [
+            'name' => $this->faker->name,
+            'address' => $this->faker->address,
+            'nik' => rand(10 ** 5, 10 ** 6 - 1),
+        ]));
+    }
+
+    public function propaagation()
+    {
+        $this->profile('propagation', $this->collectData(fn () => [
+            'name' => $this->faker->name,
+            'address' => $this->faker->address,
+            'nik' => rand(10 ** 5, 10 ** 6 - 1),
+        ]));
     }
 }
 
@@ -253,3 +288,5 @@ $profiler = new Profiler(
 );
 
 $profiler->crud();
+$profiler->st();
+$profiler->tpc();

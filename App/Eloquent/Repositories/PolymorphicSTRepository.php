@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Eloquent\Repositories;
 
 use App\Eloquent\Models\EmployeeST;
@@ -6,33 +7,33 @@ use App\Eloquent\Repositories\Repository;
 
 class PolymorphicSTRepository extends Repository
 {
-    public function createOperation()
+    public function createOperation($data)
     {
         $fills = [
-            'name' => $this->faker->name,
-            'address' => $this->faker->address(),
-            'nik' => rand(10000, 99999),
-            'contract_duration' => null
+            'name' => $data['name'],
+            'address' => $data['address'],
+            'nik' => $data['nik'],
+            'contract_duration' => $data['contract_duration']
         ];
 
         $employee = EmployeeST::create($fills);
-        return response()->json([ 'employee' => $employee ]);
+        return response()->json(['employee' => $employee]);
     }
 
     public function readOperation()
     {
         $employees = EmployeeST::all();
-        return response()->json([ 'employee' => $employees ]);
+        return response()->json(['employee' => $employees]);
     }
 
-    public function updateOperation()
+    public function updateOperation($data, $id)
     {
         try {
             /** @var EmployeeST */
-            $employee = EmployeeST::find($this->randomId());
+            $employee = EmployeeST::find($id);
             $employee->fill([
-                'name' => $this->faker->name,
-                'address' => $this->faker->address
+                'name' => $data['name'],
+                'address' => $data['address']
             ]);
             $employee->saveOrFail();
             return response()->json(['employee' => $employee]);
@@ -40,18 +41,16 @@ class PolymorphicSTRepository extends Repository
             return response()->json(['employee' => $th->getMessage()]);
         }
     }
-    public function deleteOperation()
+    public function deleteOperation($id)
     {
         /** @var EmployeeST */
-        $employee = EmployeeST::find($this->randomId());
+        $employee = EmployeeST::find($id);
         $employee->delete();
-        return response()->json([
-            'employee' => $employee
-        ]);
+        return response()->json(['employee' => $employee]);
     }
-    public function lookupOperation()
+    public function lookupOperation($id)
     {
-        $employee = EmployeeST::find($this->randomId());
-        return response()->json([ 'employee' => $employee ]);
+        $employee = EmployeeST::find($id);
+        return response()->json(['employee' => $employee]);
     }
 }

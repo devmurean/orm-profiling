@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Doctrine\Repositories;
 
 use App\Doctrine\Models\ContractTPC;
@@ -7,15 +8,15 @@ use App\Doctrine\Models\PermanentTPC;
 
 class PolymorphicTPCRepository extends Repository
 {
-    public function createOperation()
+    public function createOperation($data)
     {
         $employee = new PermanentTPC;
         $employee->init(
-            name: $this->faker->name,
-            address: $this->faker->address,
-            nik: rand(10**5, 10**6-1),
+            name: $data['name'],
+            address: $data['address'],
+            nik: $data['nik'],
         );
-        
+
         $this->em->persist($employee);
         $this->em->flush();
 
@@ -30,42 +31,38 @@ class PolymorphicTPCRepository extends Repository
             'employees' => $this->serializeCollection($employees)
         ]);
     }
-    public function updateOperation()
+    public function updateOperation($data, $id)
     {
-        $employee = $this->randomEntity(EmployeeTPC::class);
-        if (get_class($employee) === PermanentTPC::class) {
-            $employee->init(
-                name: $this->faker->name,
-                address: $this->faker->address,
-                nik: rand(10**5, 10**6-1),
-            );
-        } else {
-            $employee->init(
-                name: $this->faker->name,
-                address: $this->faker->address,
-                contract_duration: rand(1, 5),
-            );
-        }
+        $employee = $this->em->find(EmployeeTPC::class, $id);
+        // if (get_class($employee) === PermanentTPC::class) {
+        $employee->init(
+            name: $data['name'],
+            address: $data['address'],
+            nik: $employee->nik,
+        );
+        // } else {
+        //     $employee->init(
+        //         name: $this->faker->name,
+        //         address: $this->faker->address,
+        //         contract_duration: rand(1, 5),
+        //     );
+        // }
         $this->em->persist($employee);
         $this->em->flush();
         return response()->json([
             'employee' => $employee->serialize()
         ]);
     }
-    public function deleteOperation()
+    public function deleteOperation($id)
     {
-        $employee = $this->randomEntity(EmployeeTPC::class);
+        $employee = $this->em->find(EmployeeTPC::class, $id);
         $this->em->remove($employee);
         $this->em->flush();
-        return response()->json([
-            'employee' => $employee->serialize()
-        ]);
+        return response()->json(['employee' => $employee->serialize()]);
     }
-    public function lookupOperation()
+    public function lookupOperation($id)
     {
-        $employee = $this->randomEntity(EmployeeTPC::class);
-        return response()->json([
-            'employee' => $employee->serialize()
-        ]);
+        $employee = $this->em->find(EmployeeTPC::class, $id);
+        return response()->json(['employee' => $employee->serialize()]);
     }
 }

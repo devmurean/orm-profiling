@@ -6,17 +6,20 @@ class CRUDController extends Controller
 {
     public function createOperation($orm)
     {
-        return $this->selectORM($orm)->createOperation();
+        $data = request()->body();
+
+        return $this->selectORM($orm)->createOperation($data);
     }
 
-    public function updateOperation($orm)
+    public function updateOperation($orm, $id)
     {
-        return $this->selectORM($orm)->updateOperation();
+        $data = request()->body();
+        return $this->selectORM($orm)->updateOperation($data, $id);
     }
 
-    public function deleteOperation($orm)
+    public function deleteOperation($orm, $id)
     {
-        return $this->selectORM($orm)->deleteOperation();
+        return $this->selectORM($orm)->deleteOperation($id);
     }
 
     public function readOperation($orm)
@@ -24,8 +27,8 @@ class CRUDController extends Controller
         return $this->selectORM($orm)->readOperation();
     }
 
-    public function lookupOperation($orm)
+    public function lookupOperation($orm, $id)
     {
-        return $this->selectORM($orm)->lookupOperation();
+        return $this->selectORM($orm)->lookupOperation($id);
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Doctrine\Models;
 
 use App\Doctrine\Models\Entity as ModelsEntity;
@@ -19,7 +20,7 @@ use Doctrine\ORM\Mapping\Table;
 class User extends ModelsEntity
 {
     #[Id]
-    #[Column(name:'id', type: 'integer')]
+    #[Column(name: 'id', type: 'integer')]
     #[GeneratedValue]
     private $id;
 
@@ -47,7 +48,7 @@ class User extends ModelsEntity
         $this->tasks = new ArrayCollection();
         $this->roles = new ArrayCollection();
     }
-    
+
     public function serialize(bool $withRelationship = false): array
     {
         $base = [

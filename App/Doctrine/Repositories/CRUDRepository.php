@@ -6,13 +6,13 @@ use App\Doctrine\Models\User;
 
 class CRUDRepository extends Repository
 {
-    public function createOperation()
+    public function createOperation($data)
     {
         $user = new User;
         $user->init(
-            name: $this->faker->name,
-            email: $this->faker->uuid . '@example.com',
-            password: $this->faker->password()
+            name: $data['name'],
+            email: $data['email'],
+            password: password_hash("password", PASSWORD_DEFAULT)
         );
         $this->em->persist($user);
         $this->em->flush();
@@ -21,24 +21,26 @@ class CRUDRepository extends Repository
             'user' => $user->serialize()
         ]);
     }
-    public function updateOperation()
+    public function updateOperation($data, $id)
     {
-        $user = $this->randomEntity(User::class);
-        $user->init(
-            name: $this->faker->name,
-            email: $this->faker->uuid . '@example.com',
-            password: $this->faker->password()
-        );
-        $this->em->persist($user);
-        $this->em->flush();
+        try {
+            $user = $this->em->find(User::class, $id);
+            $user->init(
+                name: $data['name'],
+                email: $data['email'],
+                password: $user->password
+            );
+            $this->em->persist($user);
+            $this->em->flush();
 
-        return response()->json([
-            'user' => $user->serialize()
-        ]);
+            return response()->json(['user' => $user->serialize()]);
+        } catch (\Throwable $th) {
+            return response()->json(['user' => $th->getMessage()]);
+        }
     }
-    public function deleteOperation()
+    public function deleteOperation($id)
     {
-        $user = $this->randomEntity(User::class);
+        $user = $this->em->find(User::class, $id);
         $this->em->remove($user);
         $this->em->flush();
 
@@ -53,10 +55,10 @@ class CRUDRepository extends Repository
             'users' => $this->serializeCollection($users)
         ]);
     }
-    public function lookupOperation()
+    public function lookupOperation($id)
     {
         /** @var User */
-        $user = $this->randomEntity(User::class);
+        $user = $this->em->find(User::class, $id);
         return response()->json([
             'user' => $user->serialize(withRelationship: true)
         ]);

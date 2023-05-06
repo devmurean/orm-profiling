@@ -6,12 +6,12 @@ use App\Eloquent\Models\User;
 
 class CRUDRepository extends Repository
 {
-    public function createOperation()
+    public function createOperation($data)
     {
         $user = User::create([
-            'name' => $this->faker->name,
-            'email' => $this->faker->uuid . '@example.com',
-            'password' => $this->faker->password()
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => password_hash("password", PASSWORD_DEFAULT)
         ]);
         return response()->json([
             'user' => $user
@@ -20,36 +20,36 @@ class CRUDRepository extends Repository
 
     public function readOperation()
     {
-        return response()->json([ 'user' => User::all() ]);
+        return response()->json(['user' => User::all()]);
     }
 
-    public function updateOperation()
+    public function updateOperation($data, $id)
     {
         try {
-            $user = User::find($this->randomId());
+            $user = User::find($id);
             $user->fill([
-                'name' => $this->faker->name,
-                'email' => $this->faker->uuid . '@example.com',
-                'password' => $this->faker->password(),
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'password' => $user->password,
             ]);
             $user->saveOrFail();
 
-            return response()->json([ 'user' => $user ]);
+            return response()->json(['user' => $user]);
         } catch (\Throwable $th) {
-            return response()->json([ 'user' => $th->getMessage() ]);
+            return response()->json(['user' => $th->getMessage()]);
         }
     }
 
-    public function deleteOperation()
+    public function deleteOperation($id)
     {
-        $user = User::find($this->randomId());
+        $user = User::find($id);
         $user->delete();
-        return response()->json([ 'user' => $user ]);
+        return response()->json(['user' => $user]);
     }
 
-    public function lookupOperation()
+    public function lookupOperation($id)
     {
-        $user = User::with(['task', 'role', 'desk'])->find($this->randomId());
+        $user = User::with(['task', 'role', 'desk'])->find($id);
         return response()->json([
             'user' => $user
         ]);

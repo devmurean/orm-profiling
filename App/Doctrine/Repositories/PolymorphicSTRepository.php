@@ -1,26 +1,25 @@
 <?php
+
 namespace App\Doctrine\Repositories;
 
 use App\Doctrine\Models\EmployeeST;
 
 class PolymorphicSTRepository extends Repository
 {
-    public function createOperation()
+    public function createOperation($data)
     {
         $employee = new EmployeeST;
-     
+
         $employee->init(
-            name:  $this->faker->name,
-            address: $this->faker->address,
-            nik: rand(10**5, 10**6-1),
-            contract_duration: null,
+            name: $data['name'],
+            address: $data['address'],
+            nik: $data['nik'],
+            contract_duration: $data['contract_duration'],
         );
         $this->em->persist($employee);
         $this->em->flush();
 
-        return response()->json([
-            'employee' => $employee->serialize()
-        ]);
+        return response()->json(['employee' => $employee->serialize()]);
     }
     public function readOperation()
     {
@@ -29,36 +28,35 @@ class PolymorphicSTRepository extends Repository
             'employees' => $this->serializeCollection($employees)
         ]);
     }
-    public function updateOperation()
+    public function updateOperation($data, $id)
     {
-        $employee = $this->randomEntity(EmployeeST::class);
-        $employee->init(
-            name:  $this->faker->name,
-            address: $this->faker->address,
-            nik: $employee->isPermanent() ? rand(10**5, 10**6-1) : null,
-            contract_duration: !$employee->isPermanent() ? rand(1, 5) : null,
-        );
-        $this->em->persist($employee);
-        $this->em->flush();
+        try {
+            $employee = $this->em->find(EmployeeST::class, $id);
+            $employee->init(
+                name: $data['name'],
+                address: $data['address'],
+                nik: $employee->nik,
+                contract_duration: $employee->contract_duration,
+            );
+            $this->em->persist($employee);
+            $this->em->flush();
 
-        return response()->json([
-            'employee' => $employee->serialize()
-        ]);
+            return response()->json(['employee' => $employee->serialize()]);
+        } catch (\Throwable $th) {
+            return response()->json(['employee' => $th->getMessage()]);
+        }
     }
-    public function deleteOperation()
+    public function deleteOperation($id)
     {
-        $employee = $this->randomEntity(EmployeeST::class);
+        $employee = $this->em->find(EmployeeST::class, $id);
         $this->em->remove($employee);
         $this->em->flush();
 
-        return response()->json([
-            'employee' => $employee->serialize()
-        ]);
+        return response()->json(['employee' => $employee->serialize()]);
     }
-    public function lookupOperation()
+    public function lookupOperation($id)
     {
-        return response()->json([
-            'employee' => $this->randomEntity(EmployeeST::class)->serialize()
-        ]);
+        $employee = $this->em->find(EmployeeST::class, $id);
+        return response()->json(['employee' => $employee->serialize()]);
     }
 }

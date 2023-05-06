@@ -1,4 +1,5 @@
 <?php
+
 use Dotenv\Dotenv;
 
 require realpath('.') . "/vendor/autoload.php";
@@ -8,10 +9,10 @@ $dotenv->load();
 require "./App/Controllers/CRUDController.php";
 app()->group('/(doctrine|eloquent)/user', ['namespace' => 'App\Controllers', function () {
     app()->post('/', 'CRUDController@createOperation');
-    app()->put('/', 'CRUDController@updateOperation');
-    app()->post('/delete', 'CRUDController@deleteOperation');
+    app()->put('/{id}', 'CRUDController@updateOperation');
+    app()->post('/delete/{id}', 'CRUDController@deleteOperation');
     app()->get('/', 'CRUDController@readOperation');
-    app()->get('/lookup', 'CRUDController@lookupOperation');
+    app()->get('/lookup/{id}', 'CRUDController@lookupOperation');
 }]);
 
 require "./App/Controllers/PolymorphicSTController.php";

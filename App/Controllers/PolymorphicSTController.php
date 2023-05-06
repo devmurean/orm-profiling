@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controllers;
 
 class PolymorphicSTController extends Controller
@@ -6,22 +7,24 @@ class PolymorphicSTController extends Controller
     const METRIC = 'polymorphic-st';
     public function createOperation($orm)
     {
-        return $this->selectORM($orm, self::METRIC)->createOperation();
+        $data = request()->body();
+        return $this->selectORM($orm, self::METRIC)->createOperation($data);
     }
-    public function updateOperation($orm)
+    public function updateOperation($orm, $id)
     {
-        return $this->selectORM($orm, self::METRIC)->updateOperation();
+        $data = request()->body();
+        return $this->selectORM($orm, self::METRIC)->updateOperation($data, $id);
     }
     public function readOperation($orm)
     {
         return $this->selectORM($orm, self::METRIC)->readOperation();
     }
-    public function deleteOperation($orm)
+    public function deleteOperation($orm, $id)
     {
-        return $this->selectORM($orm, self::METRIC)->deleteOperation();
+        return $this->selectORM($orm, self::METRIC)->deleteOperation($id);
     }
-    public function lookupOperation($orm)
+    public function lookupOperation($orm, $id)
     {
-        return $this->selectORM($orm, self::METRIC)->lookupOperation();
+        return $this->selectORM($orm, self::METRIC)->lookupOperation($id);
     }
 }

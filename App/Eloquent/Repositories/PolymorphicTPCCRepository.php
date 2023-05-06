@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Eloquent\Repositories;
 
 use App\Eloquent\Models\ContractTPCC;
@@ -9,16 +10,16 @@ use Illuminate\Database\Capsule\Manager as DB;
 
 class PolymorphicTPCCRepository extends Repository
 {
-    public function createOperation()
+    public function createOperation($data)
     {
         try {
             DB::beginTransaction();
             $data = [
                 'type' => 'permanent',
-                'name' => $this->faker->name,
-                'address' => $this->faker->address,
-                'nik' => rand(10**5, 10**6-1),
-                'contract_duration' => rand(1, 5)
+                'name' => $data['name'],
+                'address' => $data['address'],
+                'nik' => $data['nik'],
+                'contract_duration' => null
             ];
             $result = [
                 'employee' => EmployeeTPCC::create($data),
@@ -35,21 +36,21 @@ class PolymorphicTPCCRepository extends Repository
     {
         return response()->json(['employee' => EmployeeTPCC::all()]);
     }
-    public function updateOperation()
+    public function updateOperation($data, $id)
     {
-        $object = EmployeeTPCC::find($this->randomId());
-        $object->name = $this->faker->name;
+        $object = EmployeeTPCC::find($id);
+        $object->name = $data['name'];
         $object->saveOrFail();
         return response()->json(['employee' => $object]);
     }
-    public function deleteOperation()
+    public function deleteOperation($id)
     {
-        $object = EmployeeTPCC::find($this->randomId());
+        $object = EmployeeTPCC::find($id);
         $object->delete();
         return response()->json(['employee' => $object]);
     }
-    public function lookupOperation()
+    public function lookupOperation($id)
     {
-        return response()->json(['employee' => EmployeeTPCC::find($this->randomId())]);
+        return response()->json(['employee' => EmployeeTPCC::find($id)]);
     }
 }

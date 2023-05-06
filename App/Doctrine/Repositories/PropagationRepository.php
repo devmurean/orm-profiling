@@ -14,12 +14,11 @@ class PropagationRepository extends Repository
         $this->rsm = new ResultSetMapping();
     }
 
-    public function addAttribute()
+    public function addAttribute($columnName)
     {
-        $columnName = 'c_' . rand(10**7, 10**8-1);
         $result = $this->em->createNativeQuery(
             'ALTER TABLE ' .  self::TABLE .
-            ' ADD COLUMN ' . $columnName . ' INT NULL',
+                ' ADD COLUMN ' . $columnName . ' INT NULL',
             $this->rsm
         );
         $result = $result->execute();
@@ -28,12 +27,12 @@ class PropagationRepository extends Repository
     public function updateAttribute() // update position
     {
         $columns = ['id', 'first_name', 'last_name', 'email'];
-        $selectedColumn = $this->faker->randomElement($columns);
+        $selectedColumn = $columns[array_rand($columns)];
 
         $result = $this->em->createNativeQuery(
             'ALTER TABLE ' . self::TABLE .
-            ' CHANGE COLUMN address address' .
-            ' TEXT NULL AFTER `' . $selectedColumn . '`',
+                ' CHANGE COLUMN address address' .
+                ' TEXT NULL AFTER `' . $selectedColumn . '`',
             $this->rsm
         );
         $result = $result->execute();

@@ -8,26 +8,25 @@ class PropagationRepository extends Repository
 {
     private const TABLE = 'user_isolation_propagations';
 
-    public function addAttribute()
+    public function addAttribute($columnName)
     {
-        $columnName = 'c_' . rand(10**7, 10**8-1);
         $result = DB::statement(
             'ALTER TABLE ' .  self::TABLE .
-            ' ADD COLUMN ' . $columnName . ' INT NULL'
+                ' ADD COLUMN ' . $columnName . ' INT NULL'
         );
         return response()->json(['result' => $result]);
     }
     public function updateAttribute() // update position
     {
         $columns = ['id', 'first_name', 'last_name', 'email'];
-        $selectedColumn = $this->faker->randomElement($columns);
+        $selectedColumn = $columns[array_rand($columns)];
 
         $result = DB::statement(
             'ALTER TABLE ' . self::TABLE .
-            ' CHANGE COLUMN address address' .
-            ' TEXT NULL AFTER `' . $selectedColumn . '`',
+                ' CHANGE COLUMN address address' .
+                ' TEXT NULL AFTER `' . $selectedColumn . '`',
         );
-        
+
         return response()->json(['result' => $result]);
     }
     public function deleteAttribute($name)
