@@ -16,7 +16,7 @@ class Instrumentation
             }
             $content = file_get_contents($filePath);
             $content .= date("Y-m-d H:i:s");
-            $content .= $start ? ' START' : ' END';
+            $content .= $start ? ' [S]' : ' [E]';
             $content .=  ' ' . $filename . ':' . $peakMemoryUsage . PHP_EOL;
             file_put_contents($filePath, $content);
         }

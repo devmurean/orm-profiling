@@ -9,7 +9,7 @@ Config::set([
     'log.enabled' => true,
     'log.dir' => __DIR__ . '/logs/'
 ]);
-$dotenv = Dotenv::createImmutable(__DIR__);
+$dotenv = Dotenv::createUnsafeImmutable(__DIR__);
 $dotenv->load();
 
 require "./App/Controllers/CRUDController.php";

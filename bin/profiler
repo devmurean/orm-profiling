@@ -18,17 +18,18 @@ class Profiler
     private bool $xdebug;
     private bool $memory;
 
+
     /** @var int How many iteration a test is done */
     private int $n;
 
     private array $endpoints = [
         // CRUD Group
         'crud' => [
-            // ['method' => 'get', 'name' => 'read', 'value' => '/user'],
-            // ['method' => 'get', 'name' => 'lookup', 'value' => '/user/lookup'],
+            ['method' => 'get', 'name' => 'read', 'value' => '/user'],
+            ['method' => 'get', 'name' => 'lookup', 'value' => '/user/lookup'],
             ['method' => 'post', 'name' => 'create', 'value' => '/user'],
-            // ['method' => 'put', 'name' => 'update', 'value' => '/user'],
-            // ['method' => 'post', 'name' => 'delete', 'value' => '/user/delete'],
+            ['method' => 'put', 'name' => 'update', 'value' => '/user'],
+            ['method' => 'post', 'name' => 'delete', 'value' => '/user/delete'],
         ],
 
         // ST Group
@@ -87,8 +88,8 @@ class Profiler
     ];
 
     /** @var array Record count in related database table */
+    private array $records = [100, 1000];
     // private array $records = [100, 1000, 10000, 100000];
-    private array $records = [100];
 
     private array $orms = ['doctrine', 'eloquent'];
 
@@ -162,13 +163,13 @@ class Profiler
         $this->specialSetupOn();
 
         foreach ($this->records as $record) {
-            $this->sentence("Seeding {$record} database record for {$group} group");
-            $this->seeding($group, $record);
-            $this->sentence("Seeding done");
-
-            $this->sentence("Profiling {$group} group with {$record} database record");
-
             foreach ($this->orms as $orm) {
+                // Each ORM get fresh record
+                $this->sentence("Seeding {$record} database record for {$group} group");
+                $this->seeding($group, $record);
+                $this->sentence("Seeding done");
+
+                $this->sentence("Profiling {$group} group with {$record} database record");
                 $this->sentence("Running Apache Benchmark commands for {$orm} with {$this->n} iterations for each endpoint");
                 foreach ($this->endpoints[$group] as $e) {
                     for ($i = 0; $i < $this->n; $i++) {
@@ -184,10 +185,10 @@ class Profiler
                         $command .= in_array($e['method'], ['post', 'put']) ? "{$inputFileName} -T application/json " : '';
                         $command .= "{$this->host}/{$orm}{$e['value']}";
                         // Add record ID as route parameter
-                        $command .= in_array($e['name'], ['lookup', 'update', 'delete']) ? "/{$i}" : '';
+                        $id = $i + 1;
+                        $command .= in_array($e['name'], ['lookup', 'update', 'delete']) ? "/{$id}" : '';
 
-                        $timestamp = time();
-                        $command .= " > {$this->getOutputFolder()}/{$group}.{$record}.ab.{$e['name']}.{$timestamp}.txt";
+                        $command .= " > {$this->getOutputFolder()}/{$group}.{$record}.ab.{$e['name']}." . $orm . '-' . $i . ".txt";
                         echo $command . PHP_EOL;
                         $result = exec($command);
                         print_r($result);
@@ -302,11 +303,13 @@ class Profiler
 
         $filename = '../.env';
         $filelines = file($filename);
-        $matches  = preg_grep('/^xdebug.mode/', $filelines);
+        $matches  = preg_grep('/^(LOG_MEMORY_USAGE)/', $filelines);
 
         foreach ($matches as $key => $value) {
-            $mode = $turnoff ? 'false' : 'true';
-            $filelines[$key] = 'LOG_MEMORY_USAGE=' . $mode . PHP_EOL;
+            if (str_contains($value, 'LOG_MEMORY_USAGE')) {
+                $mode = $turnoff ? 'false' : 'true';
+                $filelines[$key] = 'LOG_MEMORY_USAGE=' . $mode . PHP_EOL;
+            }
         }
 
         $newContent = implode('', $filelines);
@@ -334,7 +337,7 @@ $options = getopt('', [
     'db_username:',
     'host:',
     'n:',
-    'xdebug', // xdebug path
+    'xdebug:', // xdebug path
     'memory'
 ]);
 
@@ -345,7 +348,7 @@ $profiler = new Profiler(
     db_password: $options['db_password'],
     n: array_key_exists('n', $options) ? $options['n'] : 10,
     xdebug: array_key_exists('xdebug', $options) ? $options['xdebug'] : '',
-    memory: array_key_exists('memory', $options) ? (bool) $options['memory'] : false,
+    memory: array_key_exists('memory', $options) ?? false,
 );
 
 $profiler->crud();
