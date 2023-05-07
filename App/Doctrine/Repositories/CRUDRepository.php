@@ -8,18 +8,22 @@ class CRUDRepository extends Repository
 {
     public function createOperation($data)
     {
-        $user = new User;
-        $user->init(
-            name: $data['name'],
-            email: $data['email'],
-            password: password_hash("password", PASSWORD_DEFAULT)
-        );
-        $this->em->persist($user);
-        $this->em->flush();
+        try {
+            $user = new User;
+            $user->init(
+                name: $data['name'],
+                email: $data['email'],
+                password: password_hash("password", PASSWORD_DEFAULT)
+            );
+            $this->em->persist($user);
+            $this->em->flush();
 
-        return response()->json([
-            'user' => $user->serialize()
-        ]);
+            return response()->json([
+                'user' => $user->serialize()
+            ]);
+        } catch (\Throwable $th) {
+            app()->logger()->error($th);
+        }
     }
     public function updateOperation($data, $id)
     {

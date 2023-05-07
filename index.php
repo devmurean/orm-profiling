@@ -1,8 +1,14 @@
 <?php
 
 use Dotenv\Dotenv;
+use Leaf\Config;
 
 require realpath('.') . "/vendor/autoload.php";
+
+Config::set([
+    'log.enabled' => true,
+    'log.dir' => __DIR__ . '/logs/'
+]);
 $dotenv = Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 

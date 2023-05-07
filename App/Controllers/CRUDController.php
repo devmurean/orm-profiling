@@ -6,7 +6,7 @@ class CRUDController extends Controller
 {
     public function createOperation($orm)
     {
-        $data = request()->body();
+        $data = request()->body(false);
 
         return $this->selectORM($orm)->createOperation($data);
     }

@@ -24,11 +24,11 @@ class Profiler
     private array $endpoints = [
         // CRUD Group
         'crud' => [
-            ['method' => 'get', 'name' => 'read', 'value' => '/user'],
-            ['method' => 'get', 'name' => 'lookup', 'value' => '/user/lookup'],
+            // ['method' => 'get', 'name' => 'read', 'value' => '/user'],
+            // ['method' => 'get', 'name' => 'lookup', 'value' => '/user/lookup'],
             ['method' => 'post', 'name' => 'create', 'value' => '/user'],
-            ['method' => 'put', 'name' => 'update', 'value' => '/user'],
-            ['method' => 'post', 'name' => 'delete', 'value' => '/user/delete'],
+            // ['method' => 'put', 'name' => 'update', 'value' => '/user'],
+            // ['method' => 'post', 'name' => 'delete', 'value' => '/user/delete'],
         ],
 
         // ST Group
@@ -87,7 +87,8 @@ class Profiler
     ];
 
     /** @var array Record count in related database table */
-    private array $records = [100, 1000, 10000, 100000];
+    // private array $records = [100, 1000, 10000, 100000];
+    private array $records = [100];
 
     private array $orms = ['doctrine', 'eloquent'];
 
@@ -172,23 +173,24 @@ class Profiler
                 foreach ($this->endpoints[$group] as $e) {
                     for ($i = 0; $i < $this->n; $i++) {
                         $iterationNumber = $i + 1;
-                        $inputFileName = "inputs/{$group}.json";
+                        $inputFileName = "inputs/{$group}.{$orm}.json";
                         if (in_array($e['name'], ['update', 'create'])) {
-                            $this->writeToFile($inputFileName, $data[$i]);
+                            $dataToWrite = $group === 'propagation' ? [] : $data[$orm][$i];
+                            $this->writeToFile($inputFileName, $dataToWrite);
                         }
-                        $command = 'ab -k -n 1 -c 1 ';
+                        $command = 'ab -n 1 -c 1 ';
                         $command .= $e['method'] === 'post' ? '-p ' : '';
                         $command .= $e['method'] === 'put' ? '-u ' : '';
                         $command .= in_array($e['method'], ['post', 'put']) ? "{$inputFileName} -T application/json " : '';
                         $command .= "{$this->host}/{$orm}{$e['value']}";
                         // Add record ID as route parameter
                         $command .= in_array($e['name'], ['lookup', 'update', 'delete']) ? "/{$i}" : '';
-                        $command .= $this->memory ? '?memory=log' : '';
 
                         $timestamp = time();
                         $command .= " > {$this->getOutputFolder()}/{$group}.{$record}.ab.{$e['name']}.{$timestamp}.txt";
-
-                        exec($command);
+                        echo $command . PHP_EOL;
+                        $result = exec($command);
+                        print_r($result);
                         $this->sentence("Group: {$group}, Endpoint: {$e['name']}, iteration {$iterationNumber} done");
                     }
                     $this->sentence('---');
@@ -218,8 +220,10 @@ class Profiler
     private function collectData(Closure $callback): array
     {
         $data = [];
-        for ($i = 0; $i < $this->n; $i++) {
-            $data[] = $callback();
+        foreach ($this->orms as $orm) {
+            for ($i = 0; $i < $this->n; $i++) {
+                $data[$orm][] = $callback();
+            }
         }
         return $data;
     }
@@ -273,11 +277,17 @@ class Profiler
         $filename = $this->xdebug;
         // $filename = '/etc/php/8.2/cli/conf.d/20-xdebug.ini';
         $filelines = file($filename);
-        $matches  = preg_grep('/^xdebug.mode/', $filelines);
+        $matches  = preg_grep('/^(xdebug.mode|xdebug.output_dir)/', $filelines);
 
         foreach ($matches as $key => $value) {
-            $mode = $turnoff ? 'off' : 'profile';
-            $filelines[$key] = 'xdebug.mode=' . $mode . PHP_EOL;
+            if (str_contains($value, 'xdebug.mode')) {
+                $mode = $turnoff ? 'off' : 'profile';
+                $filelines[$key] = 'xdebug.mode=' . $mode . PHP_EOL;
+            }
+            if (str_contains($value, 'xdebug.output_dir')) {
+                $dir = realpath('./xdebug-profiling-result');
+                $filelines[$key] = 'xdebug.output_dir=' . $dir . PHP_EOL;
+            }
         }
 
         $newContent = implode('', $filelines);
@@ -291,7 +301,6 @@ class Profiler
         }
 
         $filename = '../.env';
-        // $filename = '/etc/php/8.2/cli/conf.d/20-xdebug.ini';
         $filelines = file($filename);
         $matches  = preg_grep('/^xdebug.mode/', $filelines);
 
@@ -334,13 +343,13 @@ $profiler = new Profiler(
     db: $options['db'],
     db_username: $options['db_username'],
     db_password: $options['db_password'],
-    n: array_key_exists('n', $options) ?? 10,
-    xdebug: array_key_exists('xdebug', $options) ?? '',
-    memory: array_key_exists('memory', $options) ?? false,
+    n: array_key_exists('n', $options) ? $options['n'] : 10,
+    xdebug: array_key_exists('xdebug', $options) ? $options['xdebug'] : '',
+    memory: array_key_exists('memory', $options) ? (bool) $options['memory'] : false,
 );
 
 $profiler->crud();
-$profiler->st();
-$profiler->tpc();
-$profiler->tpcc();
-$profiler->propagation();
+// $profiler->st();
+// $profiler->tpc();
+// $profiler->tpcc();
+// $profiler->propagation();

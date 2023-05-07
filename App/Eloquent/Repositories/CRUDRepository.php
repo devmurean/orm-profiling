@@ -8,14 +8,18 @@ class CRUDRepository extends Repository
 {
     public function createOperation($data)
     {
-        $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => password_hash("password", PASSWORD_DEFAULT)
-        ]);
-        return response()->json([
-            'user' => $user
-        ]);
+        try {
+            $user = User::create([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'password' => password_hash("password", PASSWORD_DEFAULT)
+            ]);
+            return response()->json([
+                'user' => $user
+            ]);
+        } catch (\Throwable $th) {
+            app()->logger()->error($th);
+        }
     }
 
     public function readOperation()

@@ -2,8 +2,6 @@
 
 namespace App;
 
-use DateTime;
-
 class Instrumentation
 {
     public static function MemoryLog(bool $start = true)
@@ -17,7 +15,7 @@ class Instrumentation
                 touch($filePath);
             }
             $content = file_get_contents($filePath);
-            $content .= DateTime::createFromFormat('U', time());
+            $content .= date("Y-m-d H:i:s");
             $content .= $start ? ' START' : ' END';
             $content .=  ' ' . $filename . ':' . $peakMemoryUsage . PHP_EOL;
             file_put_contents($filePath, $content);
