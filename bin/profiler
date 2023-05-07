@@ -91,7 +91,7 @@ class Profiler
 
     private array $orms = ['doctrine', 'eloquent'];
 
-    public function __construct(string $host, string $db, string $db_username, string $db_password, int $n, bool $xdebug = false, bool $memory = false)
+    public function __construct(string $host, string $db, string $db_username, string $db_password, int $n, string $xdebug = '', bool $memory = false)
     {
         $this->faker = Factory::create();
         $this->host = $host;
@@ -126,17 +126,11 @@ class Profiler
     private function checkDirectoryExistence()
     {
         $this->sentence('Checking directories');
-        if (!file_exists('memory-profiling-result')) {
-            mkdir('memory-profiling-result');
-        }
-        if (!file_exists('xdebug-profiling-result')) {
-            mkdir('xdebug-profiling-result');
-        }
-        if (!file_exists('load-profiling-result')) {
-            mkdir('load-profiling-result');
-        }
-        if (!file_exists('inputs')) {
-            mkdir('inputs');
+        $directories = ['memory-profiling-result', 'xdebug-profiling-result', 'load-profiling-result', 'inputs'];
+        foreach ($directories as $dir) {
+            if (!file_exists($dir)) {
+                mkdir($dir);
+            }
         }
         $this->sentence('Directories check done');
     }
@@ -159,9 +153,12 @@ class Profiler
      * @param array $data Collection of data that will get impacted in profiling process
      * @return void
      */
-    public function profile(string $group, array $data): void
+    public function profile(string $group, array $data = []): void
     {
         $this->checkDirectoryExistence();
+
+        // Turn on xdebug / memmory logging
+        $this->specialSetupOn();
 
         foreach ($this->records as $record) {
             $this->sentence("Seeding {$record} database record for {$group} group");
@@ -201,6 +198,9 @@ class Profiler
             $this->sentence("Profiling {$group} group with {$record} database record done");
         }
         $this->sentence("Profiling {$group} group done");
+
+        // Turn off xdebug / memory logging
+        $this->specialSetupOff();
     }
 
     private function sentence(string $sentence = '')
@@ -260,13 +260,60 @@ class Profiler
         ]));
     }
 
-    public function propaagation()
+    public function propagation()
     {
-        $this->profile('propagation', $this->collectData(fn () => [
-            'name' => $this->faker->name,
-            'address' => $this->faker->address,
-            'nik' => rand(10 ** 5, 10 ** 6 - 1),
-        ]));
+        $this->profile('propagation');
+    }
+
+    private function xdebugSetup(bool $turnoff = false)
+    {
+        if (!$this->xdebug) {
+            return;
+        }
+        $filename = $this->xdebug;
+        // $filename = '/etc/php/8.2/cli/conf.d/20-xdebug.ini';
+        $filelines = file($filename);
+        $matches  = preg_grep('/^xdebug.mode/', $filelines);
+
+        foreach ($matches as $key => $value) {
+            $mode = $turnoff ? 'off' : 'profile';
+            $filelines[$key] = 'xdebug.mode=' . $mode . PHP_EOL;
+        }
+
+        $newContent = implode('', $filelines);
+        file_put_contents($filename, $newContent);
+    }
+
+    private function memoryLoggingSetup(bool $turnoff = false)
+    {
+        if (!$this->memory) {
+            return;
+        }
+
+        $filename = '../.env';
+        // $filename = '/etc/php/8.2/cli/conf.d/20-xdebug.ini';
+        $filelines = file($filename);
+        $matches  = preg_grep('/^xdebug.mode/', $filelines);
+
+        foreach ($matches as $key => $value) {
+            $mode = $turnoff ? 'false' : 'true';
+            $filelines[$key] = 'LOG_MEMORY_USAGE=' . $mode . PHP_EOL;
+        }
+
+        $newContent = implode('', $filelines);
+        file_put_contents($filename, $newContent);
+    }
+
+    private function specialSetupOn()
+    {
+        $this->xdebugSetup();
+        $this->memoryLoggingSetup();
+    }
+
+    private function specialSetupOff()
+    {
+        $this->xdebugSetup(turnoff: true);
+        $this->memoryLoggingSetup(turnoff: true);
     }
 }
 
@@ -276,7 +323,10 @@ $options = getopt('', [
     'db:',
     'db_password:',
     'db_username:',
-    'host:'
+    'host:',
+    'n:',
+    'xdebug', // xdebug path
+    'memory'
 ]);
 
 $profiler = new Profiler(
@@ -284,9 +334,13 @@ $profiler = new Profiler(
     db: $options['db'],
     db_username: $options['db_username'],
     db_password: $options['db_password'],
-    n: 10
+    n: array_key_exists('n', $options) ?? 10,
+    xdebug: array_key_exists('xdebug', $options) ?? '',
+    memory: array_key_exists('memory', $options) ?? false,
 );
 
 $profiler->crud();
 $profiler->st();
 $profiler->tpc();
+$profiler->tpcc();
+$profiler->propagation();
