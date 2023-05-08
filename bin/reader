@@ -1,122 +1,166 @@
 #!/usr/bin/env php
 <?php
 
+require "../vendor/autoload.php";
+
+use jc21\CliTable;
+
+
+
+
 /** @var array Command line options */
 $options = getopt('', [
     'dir:',
 ]);
 
-function SD($arr)
+class Reader
 {
-    $variance = 0.0;
-
-    // calculating mean using array_sum() method
-    $average = average($arr);
-
-    foreach ($arr as $i) {
-        // sum of squares of differences between 
-        // all numbers and means.
-        $variance += pow(($i - $average), 2);
-    }
-
-    return (float)sqrt($variance / count($arr));
-}
-
-function SE($SD, $arr)
-{
-    return $SD / sqrt(count($arr));
-}
-
-function average($arr)
-{
-    return array_sum($arr) / count($arr);
-}
-
-function getStat($arr)
-{
-    $SD = SD($arr);
-    $SE = SE($SD, $arr);
-    $mean = average($arr);
-    $realMean = average(array_filter($arr, fn ($x) => $x <= $mean + $SD && $x >= $mean - $SD));
-    return [
-        'me' => $mean,
-        'rm' => $realMean, // mean after exclude outlier
-        'sd' => $SD,
-        'se' => $SE,
-    ];
-}
-
-
-function readFiles($mode = 'load')
-{
-    $dir = [
+    private string $mode;
+    private array $reading; // reading result
+    private array $dirs = [
         'load' => 'load-profiling-result',
         'memory' => 'memory-profiling-result',
         'xdebug' => 'xdebug-profiling-result'
-    ][$mode];
-    $documentList = array_values(array_diff(scandir($dir), array('..', '.')));
-    $result = [];
+    ];
+    private $cliTable;
 
-    foreach ($documentList as $d) {
-        if (str_contains($d, 'cachegrind')) {
-            continue; // ignore when filename prefixed by cachegrind
-        }
-        $fileLines = file($dir . '/' . $d);
-        if (!str_contains($fileLines[0], 'Apache')) {
-            continue;
-        }
+    public function __construct(string $mode = 'load')
+    {
+        $this->mode = $mode;
+        $this->cliTable = new CliTable();
+    }
+    private function standardDeviation(array $arr)
+    {
+        $variance = 0.0;
 
-        list($group, $number, $ab, $action) = explode('.', $d); // explode file title by dot (.)
+        // calculating mean using array_sum() method
+        $average = $this->average($arr);
 
-        $toArray = [];
-        foreach ($fileLines as $line) {
-            $separatedLine = explode(':', $line);
-            if (array_key_exists(1, $separatedLine)) {
-                $toArray[$separatedLine[0]] = trim($separatedLine[1]) ?? '';
-            }
+        foreach ($arr as $i) {
+            // sum of squares of differences between 
+            // all numbers and means.
+            $variance += pow(($i - $average), 2);
         }
 
-        $rps = explode(' ', $toArray['Requests per second']);
-        $tpr = explode(' ', $toArray['Time per request']);
-        $orm = explode(' ', trim(str_replace('/', ' ', $toArray['Document Path'])))[0];
+        return (float)sqrt($variance / count($arr));
+    }
+    private function standardError(float $SD, array $arr)
+    {
+        return $SD / sqrt(count($arr));
+    }
+    private function average(array $arr)
+    {
+        return array_sum($arr) / count($arr);
+    }
 
-        $result[$action][$group][$orm][$number]['rps'][] = $rps[0];
-        $result[$action][$group][$orm][$number]['tpr'][] = $tpr[0];
-
-        $result[$action][$group][$orm][$number]['stat'] = [
-            'rps' => getStat($result[$action][$group][$orm][$number]['rps']),
-            'tpr' => getStat($result[$action][$group][$orm][$number]['tpr']),
+    private function getStat(array $arr)
+    {
+        $SD = $this->standardDeviation($arr);
+        $SE = $this->standardError($SD, $arr);
+        $mean = $this->average($arr);
+        $realMean = $this->average(array_filter($arr, fn ($x) => $x <= $mean + $SD && $x >= $mean - $SD));
+        return [
+            'me' => $mean,
+            'rm' => $realMean, // mean after exclude outlier
+            'sd' => $SD,
+            'se' => $SE,
         ];
     }
-    return $result;
-}
+    public function readFiles()
+    {
+        $dir = $this->dirs[$this->mode];
+        $documentList = array_values(array_diff(scandir($dir), array('..', '.')));
 
-function writeToFile($arr, $filename = 'reports/scanned-load-result.txt')
-{
-    $text = '';
-    foreach ($arr as $actionKey => $action) {
-        $text .= '---------------------------------------------' . PHP_EOL;
-        foreach ($action as $groupKey => $group) {
-            $text .= '* ' . $actionKey . ' - ' . $groupKey . PHP_EOL;
-            foreach ($group as $ormKey => $orm) {
-                $rps = '';
-                $tpr = '';
-                foreach ($orm as $numberKey => $number) {
-                    $rps .= number_format($number['stat']['rps']['rm'], 3, ',', '.') . ' ';
-                    $tpr .= number_format($number['stat']['tpr']['rm'], 3, ',', '.') . ' ';
-                }
-                $text .= $ormKey . ' [rps] ' . "\t" . $rps . PHP_EOL;
-                $text .= $ormKey . ' [tpr] ' . "\t" . $tpr . PHP_EOL;
-                $text .= $ormKey === 'doctrine' ? '||||||||||' . PHP_EOL : '';
+        foreach ($documentList as $d) {
+            if (str_contains($d, 'cachegrind')) {
+                continue; // ignore when filename prefixed by cachegrind
             }
-            $text .= PHP_EOL;
+            $fileLines = file($dir . '/' . $d);
+            if (!str_contains($fileLines[0], 'Apache')) {
+                continue;
+            }
+
+            list($group, $number, $ab, $action) = explode('.', $d); // explode file title by dot (.)
+            $matches  = preg_grep('/^(Time per request|Document Path)/', $fileLines);
+            $toArray = [];
+            foreach ($matches as $line) {
+                $separatedLine = explode(':', $line);
+                if (array_key_exists(1, $separatedLine)) {
+                    $toArray[$separatedLine[0]] = trim($separatedLine[1]) ?? '';
+                }
+            }
+
+            $tpr = explode(' ', $toArray['Time per request']);
+            $orm = explode(' ', trim(str_replace('/', ' ', $toArray['Document Path'])))[0];
+
+            /**
+             * create => [
+             *   crud => [
+             *     '100' => [
+             *       doctrine => [1.452, n, a, ....],
+             *       eloquent => [...],
+             *     ],
+             *     '1000' => [
+             *       doctrine => [1.452, n, a, ....],
+             *       eloquent => [...],
+             *     ]
+             *   ]
+             * ]
+             */
+            $this->reading[$action][$group][$number][$orm][] = $tpr[0];
         }
     }
-    file_put_contents($filename, $text);
-    echo 'Result is successfully written to ' . $filename;
+    public function displayInTerminal()
+    {
+        $data = [];
+        foreach ($this->reading as $actionName => $groupNames) {
+            $subdata['action'] = $actionName;
+            foreach ($groupNames as $groupName => $recordNumbers) {
+                $subdata['group'] = $groupName;
+                foreach ($recordNumbers as $recordNumber => $ormNames) {
+                    foreach ($ormNames as $ormName => $values) {
+                        $subdata[$recordNumber . '.' . $ormName] = number_format($this->getStat($values)['rm'], 3, ',', '.');
+                    }
+                }
+                $data[] = $subdata;
+            }
+        }
+        $this->cliTable->setChars(array(
+            'top'          => '-',
+            'top-mid'      => '+',
+            'top-left'     => '+',
+            'top-right'    => '+',
+            'bottom'       => '-',
+            'bottom-mid'   => '+',
+            'bottom-left'  => '+',
+            'bottom-right' => '+',
+            'left'         => '|',
+            'left-mid'     => '+',
+            'mid'          => '-',
+            'mid-mid'      => '+',
+            'right'        => '|',
+            'right-mid'    => '+',
+            'middle'       => '| ',
+        ));
+
+        $this->cliTable->addField('Action', 'action');
+        $this->cliTable->addField('Group', 'group');
+        $this->cliTable->addField('100 (D)', '100.doctrine', color: 'blue');
+        $this->cliTable->addField('100 (E)', '100.eloquent', color: 'red');
+        $this->cliTable->addField('1K (D)', '1000.doctrine', color: 'blue');
+        $this->cliTable->addField('1K (E)', '1000.eloquent', color: 'red');
+        $this->cliTable->addField('10K (D)', '10000.doctrine', color: 'blue');
+        $this->cliTable->addField('10K (E)', '10000.eloquent', color: 'red');
+        $this->cliTable->addField('100K (D)', '100000.doctrine', color: 'blue');
+        $this->cliTable->addField('100K (E)', '100000.eloquent', color: 'red');
+        $this->cliTable->injectData($data);
+        $this->cliTable->display();
+    }
 }
 
-
 $targetDir = array_key_exists('dir', $options) ? $options['dir'] : 'load';
-$filename = 'reports/' . $targetDir . '.txt';
-writeToFile(readFiles($targetDir), $filename);
+
+/** @var Reader */
+$reader = new Reader($targetDir);
+$reader->readFiles();
+$reader->displayInTerminal();
