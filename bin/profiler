@@ -15,7 +15,7 @@ class Profiler
     private string $db;
     private string $db_username;
     private string $db_password;
-    private bool $xdebug;
+    private string $xdebug;
     private bool $memory;
 
 
@@ -189,6 +189,7 @@ class Profiler
                         $command .= in_array($e['name'], ['lookup', 'update', 'delete']) ? "/{$id}" : '';
 
                         $command .= " > {$this->getOutputFolder()}/{$group}.{$record}.ab.{$e['name']}." . $orm . '-' . $i . ".txt";
+
                         exec($command);
                         $this->sentence("Group: {$group}, Endpoint: {$e['name']}, iteration {$iterationNumber} done");
                     }
@@ -276,6 +277,7 @@ class Profiler
         $filename = $this->xdebug;
         // $filename = '/etc/php/8.2/cli/conf.d/20-xdebug.ini';
         $filelines = file($filename);
+
         $matches  = preg_grep('/^(xdebug.mode|xdebug.output_dir)/', $filelines);
 
         foreach ($matches as $key => $value) {
@@ -291,6 +293,7 @@ class Profiler
 
         $newContent = implode('', $filelines);
         file_put_contents($filename, $newContent);
+        exec('sudo systemctl restart apache2');
     }
 
     private function memoryLoggingSetup(bool $turnoff = false)
