@@ -88,8 +88,7 @@ class Profiler
     ];
 
     /** @var array Record count in related database table */
-    private array $records = [100, 1000];
-    // private array $records = [100, 1000, 10000, 100000];
+    private array $records = [100, 1000, 10000, 100000];
 
     private array $orms = ['doctrine', 'eloquent'];
 
@@ -190,9 +189,7 @@ class Profiler
                         $command .= in_array($e['name'], ['lookup', 'update', 'delete']) ? "/{$id}" : '';
 
                         $command .= " > {$this->getOutputFolder()}/{$group}.{$record}.ab.{$e['name']}." . $orm . '-' . $i . ".txt";
-                        echo $command . PHP_EOL;
-                        $result = exec($command);
-                        print_r($result);
+                        exec($command);
                         $this->sentence("Group: {$group}, Endpoint: {$e['name']}, iteration {$iterationNumber} done");
                     }
                     $this->sentence('---');
@@ -353,7 +350,7 @@ $profiler = new Profiler(
 );
 
 $profiler->crud();
-// $profiler->st();
-// $profiler->tpc();
-// $profiler->tpcc();
-// $profiler->propagation();
+$profiler->st();
+$profiler->tpc();
+$profiler->tpcc();
+$profiler->propagation();

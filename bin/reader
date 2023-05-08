@@ -58,6 +58,9 @@ function readFiles($mode = 'load')
     $result = [];
 
     foreach ($documentList as $d) {
+        if (str_contains($d, 'cachegrind')) {
+            continue; // ignore when filename prefixed by cachegrind
+        }
         $fileLines = file($dir . '/' . $d);
         if (!str_contains($fileLines[0], 'Apache')) {
             continue;
@@ -104,7 +107,7 @@ function writeToFile($arr, $filename = 'reports/scanned-load-result.txt')
                 }
                 $text .= $ormKey . ' [rps] ' . "\t" . $rps . PHP_EOL;
                 $text .= $ormKey . ' [tpr] ' . "\t" . $tpr . PHP_EOL;
-                $text .= $ormKey === 'doctrine' ? '|' . PHP_EOL : '';
+                $text .= $ormKey === 'doctrine' ? '||||||||||' . PHP_EOL : '';
             }
             $text .= PHP_EOL;
         }

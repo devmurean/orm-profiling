@@ -36,7 +36,7 @@ class PropagationController extends Controller
     {
         $command = 'mysql -u ' . $_ENV['DB_USER'] . ' -p' . $_ENV['DB_PASSWORD'] .
             ' -D ' . $_ENV['DB_NAME'] .
-            ' -e "ALTER TABLE user_isolation_propagations DROP COLUMN ' . $this->columnName . ' INT NULL;"';
+            ' -e "ALTER TABLE user_isolation_propagations DROP COLUMN ' . $this->columnName . ';"';
         exec($command);
     }
 }

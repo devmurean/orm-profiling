@@ -10,10 +10,9 @@ class PropagationRepository extends Repository
 
     public function addAttribute($columnName)
     {
-        $result = DB::statement(
-            'ALTER TABLE ' .  self::TABLE .
-                ' ADD COLUMN ' . $columnName . ' INT NULL'
-        );
+        $query = 'ALTER TABLE ' .  self::TABLE .  ' ADD COLUMN ' . $columnName . ' INT NULL';
+        app()->logger()->debug('eloquent ' . $query);
+        $result = DB::statement($query);
         return response()->json(['result' => $result]);
     }
     public function updateAttribute() // update position
