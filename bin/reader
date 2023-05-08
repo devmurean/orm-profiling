@@ -1,5 +1,11 @@
 #!/usr/bin/env php
 <?php
+
+/** @var array Command line options */
+$options = getopt('', [
+    'dir:',
+]);
+
 function SD($arr)
 {
     $variance = 0.0;
@@ -13,7 +19,7 @@ function SD($arr)
         $variance += pow(($i - $average), 2);
     }
 
-    return (float)sqrt($variance/count($arr));
+    return (float)sqrt($variance / count($arr));
 }
 
 function SE($SD, $arr)
@@ -23,7 +29,7 @@ function SE($SD, $arr)
 
 function average($arr)
 {
-    return array_sum($arr)/count($arr);
+    return array_sum($arr) / count($arr);
 }
 
 function getStat($arr)
@@ -41,17 +47,24 @@ function getStat($arr)
 }
 
 
-function readFiles()
+function readFiles($mode = 'load')
 {
-    $dir = 'load-profiling-result';
+    $dir = [
+        'load' => 'load-profiling-result',
+        'memory' => 'memory-profiling-result',
+        'xdebug' => 'xdebug-profiling-result'
+    ][$mode];
     $documentList = array_values(array_diff(scandir($dir), array('..', '.')));
     $result = [];
-    
+
     foreach ($documentList as $d) {
-        $fileLines = file($dir . '/'. $d);
-        
+        $fileLines = file($dir . '/' . $d);
+        if (!str_contains($fileLines[0], 'Apache')) {
+            continue;
+        }
+
         list($group, $number, $ab, $action) = explode('.', $d); // explode file title by dot (.)
-       
+
         $toArray = [];
         foreach ($fileLines as $line) {
             $separatedLine = explode(':', $line);
@@ -59,14 +72,14 @@ function readFiles()
                 $toArray[$separatedLine[0]] = trim($separatedLine[1]) ?? '';
             }
         }
-        
+
         $rps = explode(' ', $toArray['Requests per second']);
         $tpr = explode(' ', $toArray['Time per request']);
         $orm = explode(' ', trim(str_replace('/', ' ', $toArray['Document Path'])))[0];
-        
+
         $result[$action][$group][$orm][$number]['rps'][] = $rps[0];
         $result[$action][$group][$orm][$number]['tpr'][] = $tpr[0];
-    
+
         $result[$action][$group][$orm][$number]['stat'] = [
             'rps' => getStat($result[$action][$group][$orm][$number]['rps']),
             'tpr' => getStat($result[$action][$group][$orm][$number]['tpr']),
@@ -75,13 +88,13 @@ function readFiles()
     return $result;
 }
 
-function writeToFile($arr, $filename = 'scanned-load-result.txt')
+function writeToFile($arr, $filename = 'reports/scanned-load-result.txt')
 {
     $text = '';
     foreach ($arr as $actionKey => $action) {
         $text .= '---------------------------------------------' . PHP_EOL;
         foreach ($action as $groupKey => $group) {
-            $text .= '* ' . $actionKey .' - ' . $groupKey . PHP_EOL;
+            $text .= '* ' . $actionKey . ' - ' . $groupKey . PHP_EOL;
             foreach ($group as $ormKey => $orm) {
                 $rps = '';
                 $tpr = '';
@@ -89,8 +102,8 @@ function writeToFile($arr, $filename = 'scanned-load-result.txt')
                     $rps .= number_format($number['stat']['rps']['rm'], 3, ',', '.') . ' ';
                     $tpr .= number_format($number['stat']['tpr']['rm'], 3, ',', '.') . ' ';
                 }
-                $text .= $ormKey . ' [rps] '. "\t" . $rps . PHP_EOL;
-                $text .= $ormKey . ' [tpr] '. "\t" . $tpr . PHP_EOL;
+                $text .= $ormKey . ' [rps] ' . "\t" . $rps . PHP_EOL;
+                $text .= $ormKey . ' [tpr] ' . "\t" . $tpr . PHP_EOL;
                 $text .= $ormKey === 'doctrine' ? '|' . PHP_EOL : '';
             }
             $text .= PHP_EOL;
@@ -100,4 +113,7 @@ function writeToFile($arr, $filename = 'scanned-load-result.txt')
     echo 'Result is successfully written to ' . $filename;
 }
 
-writeToFile(readFiles());
+
+$targetDir = array_key_exists('dir', $options) ? $options['dir'] : 'load';
+$filename = 'reports/' . $targetDir . '.txt';
+writeToFile(readFiles($targetDir), $filename);

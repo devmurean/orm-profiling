@@ -128,10 +128,11 @@ class Profiler
     private function checkDirectoryExistence()
     {
         $this->sentence('Checking directories');
-        $directories = ['memory-profiling-result', 'xdebug-profiling-result', 'load-profiling-result', 'inputs'];
+        $directories = ['memory-profiling-result', 'xdebug-profiling-result', 'load-profiling-result', 'inputs', 'reports'];
         foreach ($directories as $dir) {
             if (!file_exists($dir)) {
                 mkdir($dir);
+                $this->sentence($dir . ' directory has been created');
             }
         }
         $this->sentence('Directories check done');
