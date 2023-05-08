@@ -11,6 +11,7 @@ use jc21\CliTable;
 /** @var array Command line options */
 $options = getopt('', [
     'dir:',
+    'csv',
 ]);
 
 class Reader
@@ -110,7 +111,8 @@ class Reader
             $this->reading[$action][$group][$number][$orm][] = $tpr[0];
         }
     }
-    public function displayInTerminal()
+
+    private function prepareData()
     {
         $data = [];
         foreach ($this->reading as $actionName => $groupNames) {
@@ -125,6 +127,46 @@ class Reader
                 $data[] = $subdata;
             }
         }
+        return $data;
+    }
+
+    public function exportCSV()
+    {
+        echo 'Writting on ' . $this->mode . '.csv' . PHP_EOL;
+        $data = $this->prepareData();
+        $fp = fopen('reports/' . $this->mode . '.csv', 'w');
+
+        foreach ($data as $fields) {
+            $doctrineFields = [
+                $fields['action'],
+                $fields['group'],
+                'Doctrine',
+                $fields['100.doctrine'],
+                $fields['1000.doctrine'],
+                $fields['10000.doctrine'],
+                $fields['100000.doctrine'],
+            ];
+            $eloquentFields = [
+                $fields['action'],
+                $fields['group'],
+                'Eloquent',
+                $fields['100.eloquent'],
+                $fields['1000.eloquent'],
+                $fields['10000.eloquent'],
+                $fields['100000.eloquent'],
+            ];
+            fputcsv($fp, $doctrineFields);
+            fputcsv($fp, $eloquentFields);
+        }
+        fclose($fp);
+
+        echo 'Report has been written on ' . $this->mode . '.csv' . PHP_EOL;
+    }
+
+    public function displayInTerminal()
+    {
+        $data = $this->prepareData();
+
         $this->cliTable->setChars(array(
             'top'          => '-',
             'top-mid'      => '+',
@@ -163,4 +205,8 @@ $targetDir = array_key_exists('dir', $options) ? $options['dir'] : 'load';
 /** @var Reader */
 $reader = new Reader($targetDir);
 $reader->readFiles();
-$reader->displayInTerminal();
+if (array_key_exists('csv', $options)) {
+    $reader->exportCSV();
+} else {
+    $reader->displayInTerminal();
+}
