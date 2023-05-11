@@ -8,13 +8,14 @@ require_once 'bootstrap.php';
 
 class Repository
 {
+    protected int $startMemory;
     public function __construct()
     {
-        Instrumentation::MemoryLog(start: true);
+        $this->startMemory = Instrumentation::MemoryLog(start: true);
     }
 
     public function __destruct()
     {
-        Instrumentation::MemoryLog(start: false);
+        Instrumentation::MemoryLog(start: false, startMemory: $this->startMemory);
     }
 }

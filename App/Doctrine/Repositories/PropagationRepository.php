@@ -17,7 +17,6 @@ class PropagationRepository extends Repository
     public function addAttribute($columnName)
     {
         $query = 'ALTER TABLE ' .  self::TABLE .  ' ADD COLUMN ' . $columnName . ' INT NULL';
-        app()->logger()->debug('doctrine ' . $query);
         $result = $this->em->createNativeQuery($query, $this->rsm);
         $result = $result->execute();
         return response()->json(['result' => $result]);

@@ -5,9 +5,6 @@ require "../vendor/autoload.php";
 
 use jc21\CliTable;
 
-
-
-
 /** @var array Command line options */
 $options = getopt('', [
     'dir:',
@@ -73,8 +70,8 @@ class Reader
         $documentList = array_values(array_diff(scandir($dir), array('..', '.')));
 
         foreach ($documentList as $d) {
-            if (str_contains($d, 'cachegrind')) {
-                continue; // ignore when filename prefixed by cachegrind
+            if (str_contains($d, 'cachegrind') || str_contains($d, 'MEMORY')) {
+                continue; // ignore when filename prefixed by cachegrind or MEMORY
             }
             $fileLines = file($dir . '/' . $d);
             if (!str_contains($fileLines[0], 'Apache')) {
@@ -112,6 +109,79 @@ class Reader
         }
     }
 
+    public function memoryReport($csv = false)
+    {
+        $dir = $this->dirs[$this->mode];
+        $documentList = array_values(array_diff(scandir($dir), array('..', '.')));
+
+        $result = [];
+        foreach ($documentList as $d) {
+            if (!str_contains($d, 'MEMORY')) {
+                continue; // ignore when filename is not prefixed by MEMORY
+            }
+            $fileLines = file($dir . '/' . $d);
+            $i = 0;
+            $measurement = [];
+            foreach ($fileLines as $fl) {
+                if ($i >= 4) {
+                    continue;
+                }
+                list($memoryStart, $memoryEnd, $action, $group, $orm) = explode('/', str_replace(PHP_EOL, '', $fl));
+                $measurement = [
+                    'action' => $action,
+                    'group' => $group,
+                    'orm' => $orm,
+                    'count' => 100 * 10 ** $i,
+                    'memory_start' => number_format($memoryStart / 1024 ** 2, 3, ',', '.'),
+                    'memory_end' => number_format($memoryEnd / 1024 ** 2, 3, ',', '.'),
+                    'memory_delta' => number_format(($memoryEnd - $memoryStart) / 1024 ** 2, 3, ',', '.'),
+                ];
+                $i++;
+                $result[] = $measurement;
+            }
+        }
+
+        if ($csv) {
+            echo 'Writting on ' . $this->mode . '.csv' . PHP_EOL;
+
+            $fp = fopen('reports/' . $this->mode . '.csv', 'w');
+            fputcsv($fp, ['Action', 'Group', 'ORM', 'Count', 'Start', 'End', 'Diff']); // title or header
+            foreach ($result as $fields) {
+                fputcsv($fp, $fields);
+            }
+            fclose($fp);
+
+            echo 'Report has been written on ' . $this->mode . '.csv' . PHP_EOL;
+        } else {
+            $this->cliTable->setChars(array(
+                'top'          => '-',
+                'top-mid'      => '+',
+                'top-left'     => '+',
+                'top-right'    => '+',
+                'bottom'       => '-',
+                'bottom-mid'   => '+',
+                'bottom-left'  => '+',
+                'bottom-right' => '+',
+                'left'         => '|',
+                'left-mid'     => '+',
+                'mid'          => '-',
+                'mid-mid'      => '+',
+                'right'        => '|',
+                'right-mid'    => '+',
+                'middle'       => '| ',
+            ));
+            $this->cliTable->addField('Action', 'action');
+            $this->cliTable->addField('Group', 'group');
+            $this->cliTable->addField('ORM', 'orm');
+            $this->cliTable->addField('Count', 'count');
+            $this->cliTable->addField('Start', 'memory_start');
+            $this->cliTable->addField('End', 'memory_end');
+            $this->cliTable->addField('Diff', 'memory_delta', color: 'yellow');
+            $this->cliTable->injectData($result);
+            $this->cliTable->display();
+        }
+    }
+
     private function prepareData()
     {
         $data = [];
@@ -135,6 +205,9 @@ class Reader
         echo 'Writting on ' . $this->mode . '.csv' . PHP_EOL;
         $data = $this->prepareData();
         $fp = fopen('reports/' . $this->mode . '.csv', 'w');
+
+        // Header
+        fputcsv($fp, ['Action', 'Group', 'ORM', '100', '1000', '10000', '100000']);
 
         foreach ($data as $fields) {
             $doctrineFields = [
@@ -198,6 +271,15 @@ class Reader
         $this->cliTable->injectData($data);
         $this->cliTable->display();
     }
+
+    public function loadReport($csv = false)
+    {
+        if ($csv) {
+            $this->exportCSV();
+        } else {
+            $this->displayInTerminal();
+        }
+    }
 }
 
 $targetDir = array_key_exists('dir', $options) ? $options['dir'] : 'load';
@@ -205,8 +287,9 @@ $targetDir = array_key_exists('dir', $options) ? $options['dir'] : 'load';
 /** @var Reader */
 $reader = new Reader($targetDir);
 $reader->readFiles();
-if (array_key_exists('csv', $options)) {
-    $reader->exportCSV();
+$needCSV = array_key_exists('csv', $options);
+if ($targetDir === 'memory') {
+    $reader->memoryReport($needCSV);
 } else {
-    $reader->displayInTerminal();
+    $reader->loadReport($needCSV);
 }

@@ -9,18 +9,19 @@ use Doctrine\ORM\EntityManager;
 class Repository
 {
     protected EntityManager $em;
+    protected int $startMemory;
 
     public function __construct()
     {
         require_once realpath('.') . '/App/Bootstraps/DoctrineBootstrap.php';
 
         $this->em = getEntityManager();
-        Instrumentation::MemoryLog(start: true);
+        $this->startMemory = Instrumentation::MemoryLog(start: true);
     }
 
     public function __destruct()
     {
-        Instrumentation::MemoryLog(start: false);
+        Instrumentation::MemoryLog(start: false, startMemory: $this->startMemory);
     }
 
     protected function serializeCollection(Collection|array $collection): array

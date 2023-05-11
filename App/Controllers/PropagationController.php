@@ -12,7 +12,7 @@ class PropagationController extends Controller
         $object = $this->selectORM($orm, self::METRIC);
         $this->columnName = 'c_' . rand(10 ** 3, 10 ** 4 - 1);
         switch ($action) {
-            case 'add':
+            case 'create':
                 $result = $object->addAttribute($this->columnName);
                 $this->dropColumn();
                 return $result;
