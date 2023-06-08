@@ -139,7 +139,10 @@ class Profiler
     {
         $this->checkDirectoryExistence();
 
-        // Turn on xdebug / memmory logging
+        // Turn off xdebug & memory logging
+        $this->specialSetupOff();
+
+        // Turn on xdebug / memory logging
         $this->specialSetupOn();
 
         foreach ($this->records as $record) {
@@ -180,9 +183,6 @@ class Profiler
             $this->sentence("Profiling {$group} group with {$record} database record done");
         }
         $this->sentence("Profiling {$group} group done");
-
-        // Turn off xdebug / memory logging
-        $this->specialSetupOff();
     }
 
     private function sentence(string $sentence = '')
@@ -251,9 +251,7 @@ class Profiler
 
     private function xdebugSetup(bool $turnoff = false)
     {
-        if (!$this->xdebug) {
-            return;
-        }
+
         $filename = $this->xdebug;
         // $filename = '/etc/php/8.2/cli/conf.d/20-xdebug.ini';
         $filelines = file($filename);
@@ -278,9 +276,7 @@ class Profiler
 
     private function memoryLoggingSetup(bool $turnoff = false)
     {
-        if (!$this->memory) {
-            return;
-        }
+
 
         $filename = '../.env';
         $filelines = file($filename);
@@ -299,8 +295,13 @@ class Profiler
 
     private function specialSetupOn()
     {
-        $this->xdebugSetup();
-        $this->memoryLoggingSetup();
+        if ($this->xdebug) {
+            $this->xdebugSetup();
+        }
+
+        if ($this->memory) {
+            $this->memoryLoggingSetup();
+        }
     }
 
     private function specialSetupOff()
