@@ -1,61 +1,41 @@
 <?php
 
+use App\Instrumentation;
+use App\ORM;
+use Dotenv\Dotenv;
+
 require_once __DIR__ . '/router.php';
+require realpath('.') . "/vendor/autoload.php";
 
-// ##################################################
-// ##################################################
-// ##################################################
+$dotenv = Dotenv::createUnsafeImmutable(__DIR__);
+$dotenv->load();
 
-// Static GET
-// In the URL -> http://localhost
-// The output -> Index
-get('/', 'views/index.php');
-
-// Dynamic GET. Example with 1 variable
-// The $id will be available in user.php
-get('/user/$id', 'views/user');
-
-// Dynamic GET. Example with 2 variables
-// The $name will be available in full_name.php
-// The $last_name will be available in full_name.php
-// In the browser point to: localhost/user/X/Y
-get('/user/$name/$last_name', 'views/full_name.php');
-
-// Dynamic GET. Example with 2 variables with static
-// In the URL -> http://localhost/product/shoes/color/blue
-// The $type will be available in product.php
-// The $color will be available in product.php
-get('/product/$type/color/$color', 'product.php');
-
-// A route with a callback
-get('/callback', function () {
-    echo 'Callback executed';
+post('/$orm/$group/$action', function ($orm, $group, $action) {
+  $args = func_get_args();
+  $data = $_POST;
+  return Instrumentation::run(fn () => ORM::create(...$args, $data));
 });
 
-// A route with a callback passing a variable
-// To run this route, in the browser type:
-// http://localhost/user/A
-get('/callback/$name', function ($name) {
-    echo "Callback executed. The name is $name";
+put('/$orm/$group/$action/$id', function ($orm, $group, $action, $id) {
+  $args = func_get_args();
+  $data = $_POST;
+  return Instrumentation::run(fn () => ORM::update(...$args, $data));
 });
 
-// Route where the query string happends right after a forward slash
-get('/product', '');
-
-// A route with a callback passing 2 variables
-// To run this route, in the browser type:
-// http://localhost/callback/A/B
-get('/callback/$name/$last_name', function ($name, $last_name) {
-    echo "Callback executed. The full name is $name $last_name";
+delete('/$orm/$group/$action/$id', function ($orm, $group, $action, $id) {
+  $args = func_get_args();
+  return Instrumentation::run(fn () => ORM::delete(...$args));
 });
 
-// ##################################################
-// ##################################################
-// ##################################################
-// Route that will use POST data
-post('/user', '/api/save_user');
+get('/$orm/$group/$action', function ($orm, $group, $action) {
+  $args = func_get_args();
+  return Instrumentation::run(fn () => ORM::read(...$args));
+});
 
-
+get('/$orm/$group/$action/$id', function ($orm, $group, $action, $id) {
+  $args = func_get_args();
+  return Instrumentation::run(fn () => ORM::lookup(...$args));
+});
 
 // ##################################################
 // ##################################################
