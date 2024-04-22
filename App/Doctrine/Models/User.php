@@ -2,7 +2,7 @@
 
 namespace App\Doctrine\Models;
 
-use App\Doctrine\Models\Entity as ModelsEntity;
+use App\Doctrine\Helpers\ModelCollection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Column;
@@ -17,58 +17,58 @@ use Doctrine\ORM\Mapping\Table;
 
 #[Entity]
 #[Table(name: 'users')]
-class User extends ModelsEntity
+class User
 {
-    #[Id]
-    #[Column(name: 'id', type: 'integer')]
-    #[GeneratedValue]
-    private $id;
+  #[Id]
+  #[Column(name: 'id', type: 'integer')]
+  #[GeneratedValue]
+  private $id;
 
-    #[Column(name: 'name', type: 'string', length: 255)]
-    private $name;
+  #[Column(name: 'name', type: 'string', length: 255)]
+  private $name;
 
-    #[Column(name: 'email', type: 'string', length: 255)]
-    private $email;
+  #[Column(name: 'email', type: 'string', length: 255)]
+  private $email;
 
-    #[Column(name: 'password', type: 'string', length: 255)]
-    private $password;
+  #[Column(name: 'password', type: 'string', length: 255)]
+  private $password;
 
-    #[OneToOne(targetEntity: Desk::class, mappedBy: 'user')]
-    private Desk|null $desk = null;
+  #[OneToOne(targetEntity: Desk::class, mappedBy: 'user')]
+  private Desk|null $desk = null;
 
-    #[OneToMany(targetEntity: Task::class, mappedBy: 'user')]
-    private Collection $tasks;
+  #[OneToMany(targetEntity: Task::class, mappedBy: 'user')]
+  private Collection $tasks;
 
-    #[ManyToMany(targetEntity: Role::class, inversedBy: 'users')]
-    #[JoinTable(name: 'user_role')]
-    private Collection $roles;
+  #[ManyToMany(targetEntity: Role::class, inversedBy: 'users')]
+  #[JoinTable(name: 'user_role')]
+  private Collection $roles;
 
-    public function __construct()
-    {
-        $this->tasks = new ArrayCollection();
-        $this->roles = new ArrayCollection();
-    }
+  public function __construct()
+  {
+    $this->tasks = new ArrayCollection();
+    $this->roles = new ArrayCollection();
+  }
 
-    public function serialize(bool $withRelationship = false): array
-    {
-        $base = [
-            'id' => $this->id,
-            'name' => $this->name,
-            'email' => $this->email,
-        ];
+  public function serialize(bool $withRelationship = false): array
+  {
+    $base = [
+      'id' => $this->id,
+      'name' => $this->name,
+      'email' => $this->email,
+    ];
 
-        $relationships = $withRelationship ? [
-            'tasks' => $this->serializeCollection($this->tasks),
-            'roles' => $this->serializeCollection($this->roles),
-            'desk' => $this->desk->serialize(),
-        ] : [];
-        return array_merge($base, $relationships);
-    }
+    $relationships = $withRelationship ? [
+      'tasks' => ModelCollection::serialize($this->tasks),
+      'roles' => ModelCollection::serialize($this->roles),
+      'desk' => $this->desk->serialize(),
+    ] : [];
+    return array_merge($base, $relationships);
+  }
 
-    public function init(string $name, string $email, string $password): void
-    {
-        $this->name = $name;
-        $this->email = $email;
-        $this->password = $password;
-    }
+  public function init(string $name, string $email, string $password): void
+  {
+    $this->name = $name;
+    $this->email = $email;
+    $this->password = $password;
+  }
 }
