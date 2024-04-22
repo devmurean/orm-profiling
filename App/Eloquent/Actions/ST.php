@@ -4,9 +4,9 @@ namespace App\Eloquent\Actions;
 
 use App\Eloquent\Models\EmployeeST;
 use App\Interface\ORMDriver;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Capsule\Manager as DB;
 
-class ST implements ORMDriver
+class ST extends Action implements ORMDriver
 {
   public function create(array $data): mixed
   {

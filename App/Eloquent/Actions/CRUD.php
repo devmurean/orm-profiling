@@ -4,9 +4,9 @@ namespace App\Eloquent\Actions;
 
 use App\Eloquent\Models\User;
 use App\Interface\ORMDriver;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Capsule\Manager as DB;
 
-class CRUD implements ORMDriver
+class CRUD extends Action implements ORMDriver
 {
   public function create(array $data): mixed
   {

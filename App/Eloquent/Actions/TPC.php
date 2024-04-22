@@ -5,9 +5,9 @@ namespace App\Eloquent\Actions;
 use App\Eloquent\Models\EmployeeTPC;
 use App\Eloquent\Models\PermanentTPC;
 use App\Interface\ORMDriver;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Capsule\Manager as DB;
 
-class TPC implements ORMDriver
+class TPC extends Action implements ORMDriver
 {
   public function create(array $data): mixed
   {
