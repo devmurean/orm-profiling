@@ -3,6 +3,7 @@
 namespace App;
 
 use Closure;
+use Dotenv\Dotenv;
 use Faker\Factory;
 use Faker\Generator;
 
@@ -10,18 +11,6 @@ class Profiler
 {
   /** @var Generator Faker instance */
   private Generator $faker;
-
-  private string $host;
-  private string $db;
-  private string $db_username;
-  private string $db_password;
-  private string $xdebug;
-  private bool $memory;
-
-
-  /** @var int How many iteration a test is done */
-  private int $n;
-
   private array $endpoints = [
     // CRUD Group
     'crud' => [
@@ -60,11 +49,11 @@ class Profiler
     ],
 
     // Propagation Group
-    'propagation' => [
-      ['method' => 'post', 'name' => 'create', 'value' => '/propagation/create'],
-      ['method' => 'post', 'name' => 'update', 'value' => '/propagation/update'],
-      ['method' => 'post', 'name' => 'delete', 'value' => '/propagation/delete'],
-    ],
+    // 'propagation' => [
+    //   ['method' => 'post', 'name' => 'create', 'value' => '/propagation/create'],
+    //   ['method' => 'post', 'name' => 'update', 'value' => '/propagation/update'],
+    //   ['method' => 'post', 'name' => 'delete', 'value' => '/propagation/delete'],
+    // ],
   ];
 
   /** @var array Record count in related database table */
@@ -72,13 +61,25 @@ class Profiler
 
   private array $orms = ['doctrine', 'eloquent'];
 
-  public function __construct(string $host, string $db, string $db_username, string $db_password, int $n, string $xdebug = '', bool $memory = false)
-  {
+  private string $host;
+  private string $db;
+  private string $db_username;
+  private string $db_password;
+
+  public function __construct(
+
+    /** @var int How many iteration a test is done */
+    private int $n,
+    private bool $xdebug = false,
+    private bool $memory = false
+  ) {
+    Dotenv::createUnsafeImmutable(__DIR__ . '/../')->load();
+
     $this->faker = Factory::create();
-    $this->host = $host;
-    $this->db = $db;
-    $this->db_username = $db_username;
-    $this->db_password = $db_password;
+    $this->host = $_ENV['HOST'];
+    $this->db = $_ENV['DB_NAME'];
+    $this->db_username = $_ENV['DB_USER'];
+    $this->db_password = $_ENV['DB_PASSWORD'];
     $this->n = $n;
     $this->xdebug = $xdebug;
     $this->memory = $memory;
@@ -108,13 +109,19 @@ class Profiler
   private function checkDirectoryExistence()
   {
     $this->sentence('Checking required directories');
-    $directories = ['memory-profiling-result', 'xdebug-profiling-result', 'load-profiling-result', 'inputs', 'reports'];
+    $directories = [
+      'memory-profiling-result',
+      'xdebug-profiling-result',
+      'load-profiling-result',
+      'inputs',
+      'reports'
+    ];
     foreach ($directories as $dir) {
       if (!file_exists($dir)) {
-        $this->sentence("$dir is not found");
-        $this->sentence("Creating $dir");
+        $this->sentence("    $dir is not found");
+        $this->sentence("    Creating $dir");
         mkdir($dir);
-        $this->sentence($dir . ' has been created');
+        $this->sentence("    $dir directory has been created");
       }
     }
     $this->sentence('Required directories check is done');
@@ -249,8 +256,7 @@ class Profiler
 
   private function xdebugSetup(bool $turnoff = false)
   {
-
-    $filename = $this->xdebug;
+    $filename = $_ENV['XDEBUG_PATH'];
     // $filename = '/etc/php/8.2/cli/conf.d/20-xdebug.ini';
     $filelines = file($filename);
 

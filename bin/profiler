@@ -1,41 +1,30 @@
 #!/usr/bin/env php
 <?php
-require realpath('.') . "/vendor/autoload.php";
+require "../vendor/autoload.php";
 
 use App\Profiler;
 
 /** @var array Command line options */
 $options = getopt('', [
-  'db:',
-  'db_password:',
-  'db_username:',
-  'host:',
   'n:',
-  'xdebug:', // xdebug path
-  'memory'
+  'xdebug',
+  'memory',
+  'help'
 ]);
 
 if (array_key_exists('help', $options) && $options['help'] === false) {
-  echo 'php test [commands] ' . PHP_EOL .
-    'Every command is mandatory ' .
+  echo 'php profiler [commands] ' . PHP_EOL .
     PHP_EOL . 'Commands:' . PHP_EOL .
     '    [--n int]               Number of record in database' . PHP_EOL .
-    '    [--db string]           Database name' . PHP_EOL .
-    '    [--db_password string]  Database password' . PHP_EOL .
-    '    [--db_username string]  Database username' . PHP_EOL .
-    '    [--host string]         Test target, either IP address or domain name' . PHP_EOL .
     '    [--memory bool]         (Optional) Indicate that the memory logging is included in test' . PHP_EOL .
-    '    [--xdebug string]       (Optional) Xdebug path that will be used in profiling. Xdebug will be automatically activated' . PHP_EOL;
+    '    [--xdebug string]       (Optional) Xdebug path that will be used in profiling. Xdebug will be automatically activated' . PHP_EOL .
+    '    [--help]                Print help' . PHP_EOL;
   return;
 }
 
 $profiler = new Profiler(
-  host: $options['host'],
-  db: $options['db'],
-  db_username: $options['db_username'],
-  db_password: $options['db_password'],
   n: array_key_exists('n', $options) ? $options['n'] : 10,
-  xdebug: array_key_exists('xdebug', $options) ? $options['xdebug'] : '',
+  xdebug: array_key_exists('xdebug', $options) ?? false,
   memory: array_key_exists('memory', $options) ?? false,
 );
 
@@ -43,4 +32,4 @@ $profiler->crud();
 $profiler->st();
 $profiler->tpc();
 $profiler->tpcc();
-// $profiler->propagation();
+  // $profiler->propagation();
