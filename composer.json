@@ -2,7 +2,8 @@
     "name": "murean/orm-profiling",
     "autoload": {
         "psr-4": {
-            "App\\": "App/"
+            "App\\": "App/",
+            "Profiler\\": "Profiler/"
         }
     },
     "authors": [
