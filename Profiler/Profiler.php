@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace Profiler;
 
 use Closure;
 use Dotenv\Dotenv;
@@ -83,6 +83,14 @@ class Profiler
     $this->n = $n;
     $this->xdebug = $xdebug;
     $this->memory = $memory;
+  }
+
+  public function run()
+  {
+    $this->crud();
+    $this->st();
+    $this->tpc();
+    $this->tpcc();
   }
 
   private function seeding(string $group, int $recordCount)

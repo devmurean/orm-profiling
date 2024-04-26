@@ -1,0 +1,34 @@
+#!/usr/bin/env php
+<?php
+require realpath('.') . "/vendor/autoload.php";
+
+use Profiler\Profiler;
+use Profiler\Report;
+
+/** @var array Command line options */
+$options = getopt('', ['n:', 'xdebug', 'memory', 'help']);
+
+// Show options
+if (array_key_exists('help', $options) && $options['help'] === false) {
+  echo 'php profiler [commands] ' . PHP_EOL .
+    PHP_EOL . 'Commands:' . PHP_EOL .
+    '    [--n int]               Number of iteration in profiling.' . PHP_EOL .
+    '    [--memory bool]         (Optional) Indicate that the memory logging is included in test' . PHP_EOL .
+    '    [--xdebug string]       (Optional) Xdebug path that will be used in profiling. Xdebug will be automatically activated' . PHP_EOL .
+    '    [--help]                Print help' . PHP_EOL;
+  return;
+}
+
+// Do Profiling
+$isUsingXdebug = array_key_exists('xdebug', $options) ?? false;
+$isProfilingMemory = array_key_exists('memory', $options) ?? false;
+
+$profiler = (new Profiler(
+  n: array_key_exists('n', $options) ? $options['n'] : 10,
+  xdebug: $isUsingXdebug,
+  memory: $isProfilingMemory,
+))->run();
+
+// Generate profiling report
+$mode = $isProfilingMemory ? 'memory' : 'load';
+$reader = (new Report($mode))->run();
