@@ -264,7 +264,7 @@ class Profiler
 
   private function xdebugSetup(bool $turnoff = false)
   {
-    $filename = $_ENV['XDEBUG_PATH'];
+    $filename = $_ENV['XDEBUG_CONFIG_PATH'];
     // $filename = '/etc/php/8.2/cli/conf.d/20-xdebug.ini';
     $filelines = file($filename);
 
