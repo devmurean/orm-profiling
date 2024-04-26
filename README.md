@@ -1,40 +1,70 @@
-# ORM PROFILING
+# PHP BASED OBJECT RELATIONAL MAPPING (ORM) PROFILING
 
-## Instalasi
-1. Buka command prompt / terminal, pastikan memiliki hak akses sebagai admin / `sudo`
-2. Kloning repository dari github.com
+Profile execution duration & memory consumption of PHP based ORM implementations.
+
+Doctrine and Eloquent (name of ORM product) is chosen as sample since each of them implement Data Mapper and Active Record respectively.
+
+There are three main parts: `App` directory, `Profiler` directory, and `profiler` file.
+
+`App` directory contains ORM implementations. `Profiler` directory contains instrumentations that dictate how profiling process is done. `profiler` file acted as command line interface.
+
+## Prequisite
+
+Apache Server, PHP 8.2, MySQL, composer, xdebug, and git must be installed. For the convenience sake, Apache, PHP, and MySQL can be installed using [XAMPP](https://www.apachefriends.org/). For Composer, Xdebug, and git please visit their respective guide for installation: [Composer Installation Guide](https://getcomposer.org/download/), [Xdebug Installation Guide](https://xdebug.org/docs/install), [Git Installation Guide]().
+
+## Installation
+
+The commands that used in this section is intended to work in linux environment. For Windows and Mac, please use equivalent commands.
+
+1. Clone the repository from github.com
+
 ```
 git clone https://github.com/devmurean/orm-profiling
 ```
-3. Buka direktori dan lakukan instalasi melalui composer
+
+2. Open the directory and install required packages using componser
+
 ```
 cd orm-profiling
 composer install
 ```
-4. Siapkan database pada MySQL
-5. Copy .env.example dan rename menjadi .env
-6. Ganti value pada tiap item DB_* sesuai dengan pengaturan database
 
-## Operasi
-1. Untuk melakukan profiling durasi eksekusi, gunakan perintah
-```
-php profiler --db=orm_profiling --db_username=developer --db_password=developer --host=profiling.orm.test --n=100
-```
-2. Untuk profiling terhadap konsumsi memori, gunakan perintah
-```
-php profiler --db=orm_profiling --db_username=developer --db_password=developer --host=profiling.orm.test --n=1 --memory"
+3. Prepare a MySQL database
+4. Copy .env.example dan rename it to .env
 
 ```
-3. Untuk profiling menggunakan Xdebug
+cp .env.example .env
 ```
-sudo php profiler --db=orm_profiling --db_username=developer --db_password=developer --host=profiling.orm.test --n=1 --xdebug="/etc/php/8.2/cli/conf.d/20-xdebug.ini"
+
+5. Fill up the values in `.env`. The items is self explanatory or has explanation comment attached
+6. `XDEBUG_CONFIG_PATH` can be different depends on OS.
+
+## Profiling
+
+### Help
+
+```
+php profiler --help
+```
+
+### Execution Duration
+
+```
+sudo php profiler --n=10
+```
+
+### Memory Consumption
+
+```
+sudo php profiler --n=10 --memory"
+```
+
+### Xdebug
+
+```
+sudo php profiler --n=1 --xdebug"
 ```
 
 ## Profiling Report
-Perintah dasar
-```
-php reader
-```
-Gunakan flag `--dir=memory` untuk mendapatkan report untuk konsumsi memori
 
-Gunakan flag `--csv` untuk mendapatkan report dalam format CSV.
+Report is automatically stored in `reports` directory as CSV and also displayed in monitor. Report only be generated for execution duration and memory consumption profiling. For Xdebug, its results can be visualized using KCachegrind or related tools.
