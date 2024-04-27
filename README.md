@@ -67,4 +67,4 @@ sudo php profiler --n=1 --xdebug"
 
 ## Profiling Report
 
-Report is automatically stored in `reports` directory as CSV and also displayed in monitor. Report only be generated for execution duration and memory consumption profiling. For Xdebug, its results can be visualized using KCachegrind or related tools.
+Report is automatically stored in `reports` directory as CSV and also displayed in monitor. Report only be generated for execution duration and memory consumption profiling. For Xdebug, its results can be visualized using [KCachegrind](https://kcachegrind.github.io/html/Download.html) or related tools.
