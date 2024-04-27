@@ -288,7 +288,7 @@ class Profiler
 
   private function memoryLoggingSetup(bool $turnoff = false)
   {
-    $filename = '../.env';
+    $filename = getcwd() . '/.env';
     $filelines = file($filename);
     $matches  = preg_grep('/^(LOG_MEMORY_USAGE)/', $filelines);
 
