@@ -22,10 +22,10 @@ Homestead.json
 /.vagrant
 .phpunit.result.cache
 
-load-profiling-result/*
-memory-profiling-result/*
-xdebug-profiling-result/*
-scanned-load-result.txt
-inputs/*
-reports/*
+/load-profiling-result/*
+/memory-profiling-result/*
+/xdebug-profiling-result/*
+/scanned-load-result.txt
+/inputs/*
+/reports/*
 logs/*
