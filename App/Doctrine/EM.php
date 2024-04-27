@@ -3,8 +3,10 @@
 namespace App\Doctrine;
 
 use Doctrine\DBAL\DriverManager;
+use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMSetup;
+use Symfony\Component\Cache\Adapter\PhpFilesAdapter;
 
 class EM
 {
@@ -24,6 +26,19 @@ class EM
       'dbname'   => $_ENV['DB_NAME'],
     ], $config);
 
+    self::metadataCache();
+
     return new EntityManager($connection, $config);
+  }
+
+  private static function metadataCache(): void
+  {
+    $cache = new PhpFilesAdapter(
+      'doctrine_metadata',
+      0,
+      getcwd()
+    );
+    $config = new Configuration();
+    $config->setMetadataCache($cache);
   }
 }
