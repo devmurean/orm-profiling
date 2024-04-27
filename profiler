@@ -14,7 +14,7 @@ if (array_key_exists('help', $options) && $options['help'] === false) {
     PHP_EOL . 'Commands:' . PHP_EOL .
     '    [--n int]               Number of iteration in profiling.' . PHP_EOL .
     '    [--memory bool]         (Optional) Include memory consumption in profiling' . PHP_EOL .
-    '    [--xdebug string]       (Optional) Profile using Xdebug. Xdebug will be automatically activated' . PHP_EOL .
+    '    [--xdebug bool]       (Optional) Profile using Xdebug. Xdebug will be automatically activated' . PHP_EOL .
     '    [--help]                Print help' . PHP_EOL;
   return;
 }
