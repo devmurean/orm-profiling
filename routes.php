@@ -1,11 +1,10 @@
 <?php
-
-use App\Instrumentation;
-use App\ORM;
-use Dotenv\Dotenv;
-
 require_once __DIR__ . '/router.php';
 require realpath('.') . "/vendor/autoload.php";
+
+use App\ORM;
+use Dotenv\Dotenv;
+use Profiler\Instrumentation;
 
 $dotenv = Dotenv::createUnsafeImmutable(__DIR__);
 $dotenv->load();
@@ -36,13 +35,3 @@ get('/$orm/$group/$action/$id', function ($orm, $group, $action, $id) {
   $args = func_get_args();
   return Instrumentation::run(fn () => ORM::lookup(...$args));
 });
-
-// ##################################################
-// ##################################################
-// ##################################################
-// any can be used for GETs or POSTs
-
-// For GET or POST
-// The 404.php which is inside the views folder will be called
-// The 404.php has access to $_GET and $_POST
-any('/404', 'views/404.php');
