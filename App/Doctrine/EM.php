@@ -16,6 +16,8 @@ class EM
       paths: array(realpath('.') . '/App/Doctrine/Models'),
       isDevMode: false
     );
+    $cache = new PhpFilesAdapter('doctrine_metadata', 0, getcwd());
+    $config->setMetadataCache($cache);
 
     // the connection configuration
     $connection = DriverManager::getConnection([
@@ -26,19 +28,7 @@ class EM
       'dbname'   => $_ENV['DB_NAME'],
     ], $config);
 
-    self::metadataCache();
 
     return new EntityManager($connection, $config);
-  }
-
-  private static function metadataCache(): void
-  {
-    $cache = new PhpFilesAdapter(
-      'doctrine_metadata',
-      0,
-      getcwd()
-    );
-    $config = new Configuration();
-    $config->setMetadataCache($cache);
   }
 }
