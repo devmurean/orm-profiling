@@ -1,37 +1,27 @@
 <?php
-require_once __DIR__ . '/router.php';
-require realpath('.') . "/vendor/autoload.php";
 
 use App\ORM;
-use Dotenv\Dotenv;
+use Pecee\SimpleRouter\SimpleRouter;
 use Profiler\Instrumentation;
 
-$dotenv = Dotenv::createUnsafeImmutable(__DIR__);
-$dotenv->load();
 
-post('/$orm/$group/$action', function ($orm, $group, $action) {
-  $args = func_get_args();
-  $data = $_POST;
-  return Instrumentation::run(fn () => ORM::create(...$args, $data));
+
+SimpleRouter::post('/{orm}/{group}/{action}', function ($orm, $group, $action) {
+  return Instrumentation::run(fn () => ORM::create('doctrine', $group, $action, $_POST));
 });
 
-put('/$orm/$group/$action/$id', function ($orm, $group, $action, $id) {
-  $args = func_get_args();
-  $data = $_POST;
-  return Instrumentation::run(fn () => ORM::update(...$args, $data));
+SimpleRouter::put('/{orm}/{group}/{action}/{id}', function ($orm, $group, $action, $id) {
+  return Instrumentation::run(fn () => ORM::update($orm, $group, $action, $id, $_POST));
 });
 
-delete('/$orm/$group/$action/$id', function ($orm, $group, $action, $id) {
-  $args = func_get_args();
-  return Instrumentation::run(fn () => ORM::delete(...$args));
+SimpleRouter::delete('/{orm}/{group}/{action}/{id}', function ($orm, $group, $action, $id) {
+  return Instrumentation::run(fn () => ORM::delete($orm, $group, $action, $id));
 });
 
-get('/$orm/$group/$action', function ($orm, $group, $action) {
-  $args = func_get_args();
-  return Instrumentation::run(fn () => ORM::read(...$args));
+SimpleRouter::get('/{orm}/{group}/{action}', function ($orm, $group, $action) {
+  return Instrumentation::run(fn () => ORM::read($orm, $group, $action));
 });
 
-get('/$orm/$group/$action/$id', function ($orm, $group, $action, $id) {
-  $args = func_get_args();
-  return Instrumentation::run(fn () => ORM::lookup(...$args));
+SimpleRouter::get('/{orm}/{group}/{action}/{id}', function ($orm, $group, $action, $id) {
+  return Instrumentation::run(fn () => ORM::lookup($orm, $group, $action, $id));
 });

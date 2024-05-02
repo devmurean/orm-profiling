@@ -1,6 +1,10 @@
-RewriteEngine on
-# RewriteCond %{REQUEST_FILENAME} !-d
-# RewriteCond %{REQUEST_FILENAME} !-f
-# RewriteRule . index.php [L]
-RewriteCond %{REQUEST_URI}  !(\.png|\.jpg|\.webp|\.gif|\.jpeg|\.zip|\.css|\.svg|\.js|\.pdf)$
-RewriteRule (.*) routes.php [QSA,L]
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews
+    </IfModule>
+    RewriteEngine on
+    RewriteCond %{SCRIPT_FILENAME} !-f
+    RewriteCond %{SCRIPT_FILENAME} !-d
+    RewriteCond %{SCRIPT_FILENAME} !-l
+    RewriteRule ^(.*)$ index.php/$1
+</IfModule>

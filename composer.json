@@ -18,6 +18,7 @@
         "fakerphp/faker": "^1.20",
         "symfony/cache": "^6.0",
         "vlucas/phpdotenv": "^5.5",
-        "jc21/clitable": "^1.2"
+        "jc21/clitable": "^1.2",
+        "pecee/simple-router": "5.4.1.7"
     }
 }
