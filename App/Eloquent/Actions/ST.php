@@ -4,7 +4,9 @@ namespace App\Eloquent\Actions;
 
 use App\Eloquent\Models\EmployeeST;
 use App\Interface\ORMDriver;
+use App\Request;
 use Illuminate\Database\Capsule\Manager as DB;
+use Pecee\SimpleRouter\SimpleRouter;
 
 class ST extends Action implements ORMDriver
 {
@@ -13,22 +15,22 @@ class ST extends Action implements ORMDriver
     try {
       DB::beginTransaction();
       $employee = EmployeeST::create([
-        'name' => $data['name'],
-        'address' => $data['address'],
-        'nik' => $data['nik'],
-        'contract_duration' => $data['contract_duration']
+        'name' => Request::input('name'),
+        'address' => Request::input('address'),
+        'nik' => Request::input('nik'),
+        'contract_duration' => Request::input('contract_duration')
       ]);
       DB::commit();
-      return json_encode(['employee' => $employee]);
+      return SimpleRouter::response()->json(['employee' => $employee]);
     } catch (\Throwable $th) {
       DB::rollBack();
-      return json_encode(['message' => $th->getMessage()]);
+      return SimpleRouter::response()->json(['message' => $th->getMessage()]);
     }
   }
 
   public function read(): mixed
   {
-    return json_encode(['employees' => EmployeeST::all()]);
+    return SimpleRouter::response()->json(['employees' => EmployeeST::all()]);
   }
 
   public function update(int $id, array $data): mixed
@@ -36,13 +38,16 @@ class ST extends Action implements ORMDriver
     try {
       DB::beginTransaction();
       $employee = EmployeeST::find($id);
-      $employee->fill(['name' => $data['name'], 'address' => $data['address']]);
+      $employee->fill([
+        'name' => Request::input('name'),
+        'address' => Request::input('address'),
+      ]);
       $employee->saveOrFail();
       DB::commit();
-      return json_encode(['employee' => $employee]);
+      return SimpleRouter::response()->json(['employee' => $employee]);
     } catch (\Throwable $th) {
       DB::rollBack();
-      return json_encode(['message' => $th->getMessage()]);
+      return SimpleRouter::response()->json(['message' => $th->getMessage()]);
     }
   }
 
@@ -53,15 +58,15 @@ class ST extends Action implements ORMDriver
       $employee = EmployeeST::find($id);
       $employee->delete();
       DB::commit();
-      return json_encode(['message' => 'OK']);
+      return SimpleRouter::response()->json(['message' => 'OK']);
     } catch (\Throwable $th) {
       DB::rollBack();
-      return json_encode(['message' => $th->getMessage()]);
+      return SimpleRouter::response()->json(['message' => $th->getMessage()]);
     }
   }
 
   public function lookup(int $id): mixed
   {
-    return json_encode(['employee' => EmployeeST::find($id)]);
+    return SimpleRouter::response()->json(['employee' => EmployeeST::find($id)]);
   }
 }

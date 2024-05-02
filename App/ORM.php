@@ -8,43 +8,34 @@ class ORM
 {
   private static function build(string $orm, string $group): ORMDriver
   {
+    $orm = ucfirst($orm);
     $group = strtoupper($group);
     $className = "App\\$orm\\Actions\\$group";
     return new $className();
   }
-
-  private static function ucfirstAllArguments(array $arguments): array
-  {
-    return array_map(fn ($i) => ucfirst($i), $arguments);
-  }
-
+  // TODO: change route to https://github.com/miladrahimi/phprouter
   public static function create($orm, $group, $action, $data)
   {
-    $args = self::ucfirstAllArguments($orm, $group, $action);
-    return self::build(...$args)->create($data);
+    return self::build($orm, $group)->create($data);
   }
 
   public static function read($orm, $group, $action)
   {
-    $args = self::ucfirstAllArguments(func_get_args());
-    return self::build(...$args)->read();
+    return self::build($orm, $group)->read();
   }
 
   public static function update($orm, $group, $action, $id, $data)
   {
-    $args = self::ucfirstAllArguments($orm, $group, $action);
-    return self::build(...$args)->update($id, $data);
+    return self::build($orm, $group)->update($id, $data);
   }
 
   public static function delete($orm, $group, $action, $id)
   {
-    $args = self::ucfirstAllArguments(func_get_args());
-    return self::build(...$args)->delete($id);
+    return self::build($orm, $group)->delete($id);
   }
 
   public static function lookup($orm, $group, $action, $id)
   {
-    $args = self::ucfirstAllArguments(func_get_args());
-    return self::build(...$args)->lookup($id);
+    return self::build($orm, $group)->lookup($id);
   }
 }

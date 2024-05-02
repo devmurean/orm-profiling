@@ -6,6 +6,9 @@ use App\Doctrine\EM;
 use App\Doctrine\Helpers\ModelCollection;
 use App\Doctrine\Models\User;
 use App\Interface\ORMDriver;
+use App\Request;
+use Pecee\Http\Response;
+use Pecee\SimpleRouter\SimpleRouter;
 
 class CRUD implements ORMDriver
 {
@@ -14,22 +17,23 @@ class CRUD implements ORMDriver
     try {
       $user = new User;
       $user->init(
-        name: $data['name'],
-        email: $data['email'],
+        name: Request::input('name'),
+        email: Request::input('email'),
         password: password_hash("password", PASSWORD_DEFAULT)
       );
       $em = EM::make();
       $em->persist($user);
       $em->flush();
-      return json_encode(['user' => $user->serialize()]);
+      SimpleRouter::response()->json(['user' => $user->serialize()]);
     } catch (\Throwable $th) {
-      return json_encode(['message' => $th->getMessage()]);
+      return SimpleRouter::response()->json(['message' => $th->getMessage()]);
     }
   }
 
   public function read(): mixed
   {
-    return json_encode(['users' => ModelCollection::serialize(
+    header("Content-Type: application/json");
+    echo SimpleRouter::response()->json(['users' => ModelCollection::serialize(
       EM::make()->getRepository(User::class)->findAll()
     )]);
   }
@@ -40,15 +44,15 @@ class CRUD implements ORMDriver
       $em = EM::make();
       $user = $em->find(User::class, $id);
       $user->init(
-        name: $data['name'],
-        email: $data['email'],
-        password: $user->password
+        name: Request::input('name'),
+        email: Request::input('email'),
+        password: $user->getPassword()
       );
       $em->persist($user);
       $em->flush();
-      return json_encode(['user' => $user->serialize()]);
+      return SimpleRouter::response()->json(['user' => $user->serialize()]);
     } catch (\Throwable $th) {
-      return json_encode(['message' => $th->getMessage()]);
+      return SimpleRouter::response()->json(['message' => $th->getMessage()]);
     }
   }
 
@@ -59,14 +63,14 @@ class CRUD implements ORMDriver
       $user = $em->find(User::class, $id);
       $em->remove($user);
       $em->flush();
-      return json_encode(['message' => 'OK']);
+      return SimpleRouter::response()->json(['message' => 'OK']);
     } catch (\Throwable $th) {
-      return json_encode(['message' => $th->getMessage()]);
+      return SimpleRouter::response()->json(['message' => $th->getMessage()]);
     }
   }
   public function lookup(int $id): mixed
   {
-    return json_encode([
+    return SimpleRouter::response()->json([
       'user' => EM::make()->find(User::class, $id)->serialize(true)
     ]);
   }

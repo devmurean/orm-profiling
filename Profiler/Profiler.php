@@ -18,7 +18,7 @@ class Profiler
       ['method' => 'get', 'name' => 'lookup', 'value' => '/crud/lookup'],
       ['method' => 'post', 'name' => 'create', 'value' => '/crud/create'],
       ['method' => 'put', 'name' => 'update', 'value' => '/crud/update'],
-      ['method' => 'post', 'name' => 'delete', 'value' => '/crud/delete'],
+      ['method' => 'delete', 'name' => 'delete', 'value' => '/crud/delete'],
     ],
 
     // ST Group
@@ -27,7 +27,7 @@ class Profiler
       ['method' => 'get', 'name' => 'lookup', 'value' => '/st/lookup'],
       ['method' => 'post', 'name' => 'create', 'value' => '/st/create'],
       ['method' => 'put', 'name' => 'update', 'value' => '/st/update'],
-      ['method' => 'post', 'name' => 'delete', 'value' => '/st/delete'],
+      ['method' => 'delete', 'name' => 'delete', 'value' => '/st/delete'],
     ],
 
     // TPC Group
@@ -36,7 +36,7 @@ class Profiler
       ['method' => 'get', 'name' => 'lookup', 'value' => '/tpc/lookup'],
       ['method' => 'post', 'name' => 'create', 'value' => '/tpc/create'],
       ['method' => 'put', 'name' => 'update', 'value' => '/tpc/update'],
-      ['method' => 'post', 'name' => 'delete', 'value' => '/tpc/delete'],
+      ['method' => 'delete', 'name' => 'delete', 'value' => '/tpc/delete'],
     ],
 
     // TPCC Group
@@ -45,7 +45,7 @@ class Profiler
       ['method' => 'get', 'name' => 'lookup', 'value' => '/tpcc/lookup'],
       ['method' => 'post', 'name' => 'create', 'value' => '/tpcc/create'],
       ['method' => 'put', 'name' => 'update', 'value' => '/tpcc/update'],
-      ['method' => 'post', 'name' => 'delete', 'value' => '/tpcc/delete'],
+      ['method' => 'delete', 'name' => 'delete', 'value' => '/tpcc/delete'],
     ],
 
     // Propagation Group
@@ -57,7 +57,7 @@ class Profiler
   ];
 
   /** @var array Record count in related database table */
-  private array $records = [100, 1000, 10000, 100000];
+  private array $records = [100, 10 ** 3, 10 ** 4, 10 ** 5];
 
   private array $orms = ['doctrine', 'eloquent'];
 

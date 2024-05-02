@@ -65,6 +65,11 @@ class User
     return array_merge($base, $relationships);
   }
 
+  public function getPassword(): string
+  {
+    return $this->password;
+  }
+
   public function init(string $name, string $email, string $password): void
   {
     $this->name = $name;

@@ -5,7 +5,9 @@ namespace App\Eloquent\Actions;
 use App\Eloquent\Models\EmployeeTPC;
 use App\Eloquent\Models\PermanentTPC;
 use App\Interface\ORMDriver;
+use App\Request;
 use Illuminate\Database\Capsule\Manager as DB;
+use Pecee\SimpleRouter\SimpleRouter;
 
 class TPC extends Action implements ORMDriver
 {
@@ -14,27 +16,27 @@ class TPC extends Action implements ORMDriver
     try {
       DB::beginTransaction();
       $employee = EmployeeTPC::create([
-        'name' => $data['name'],
-        'address' => $data['address'],
+        'name' => Request::input('name'),
+        'address' => Request::input('address'),
         'type' => 'permanent'
       ]);
 
       PermanentTPC::create([
         'id' => $employee->id,
-        'nik' => $data['nik'],
-        'contract_duration' => null
+        'nik' => Request::input('nik'),
+        'contract_duration' => null,
       ]);
       DB::commit();
-      return json_encode(['employee' => $employee->loadMissing('employment')]);
+      return SimpleRouter::response()->json(['employee' => $employee->loadMissing('employment')]);
     } catch (\Throwable $th) {
       DB::rollBack();
-      return json_encode(['message' => $th->getMessage()]);
+      return SimpleRouter::response()->json(['message' => $th->getMessage()]);
     }
   }
 
   public function read(): mixed
   {
-    return json_encode(['employees' => EmployeeTPC::all()]);
+    return SimpleRouter::response()->json(['employees' => EmployeeTPC::all()]);
   }
 
   public function update(int $id, array $data): mixed
@@ -42,14 +44,17 @@ class TPC extends Action implements ORMDriver
     try {
       DB::beginTransaction();
       $object = PermanentTPC::with('employment')->find($id);
-      $object->fill(['nik' => $data['nik'], 'contract_duration' => null]);
+      $object->fill([
+        'nik' => Request::input('nik'),
+        'contract_duration' => null,
+      ]);
       $object->employment->name = $data['name'];
       $object->push();
       DB::commit();
-      return json_encode(['object' => $object]);
+      return SimpleRouter::response()->json(['object' => $object]);
     } catch (\Throwable $th) {
       DB::rollBack();
-      return json_encode(['message' => $th->getMessage()]);
+      return SimpleRouter::response()->json(['message' => $th->getMessage()]);
     }
   }
 
@@ -61,10 +66,10 @@ class TPC extends Action implements ORMDriver
       $employee->employment()->delete();
       $employee->delete();
       DB::commit();
-      return json_encode(['message' => 'OK']);
+      return SimpleRouter::response()->json(['message' => 'OK']);
     } catch (\Throwable $th) {
       DB::rollBack();
-      return json_encode(['message' => $th->getMessage()]);
+      return SimpleRouter::response()->json(['message' => $th->getMessage()]);
     }
   }
 
