@@ -57,7 +57,10 @@ class Profiler
   ];
 
   /** @var array Record count in related database table */
-  private array $records = [100, 10 ** 3, 10 ** 4, 10 ** 5];
+  private array $records = [
+    100,
+    // 10 ** 3, 10 ** 4, 10 ** 5
+  ];
 
   private array $orms = ['doctrine', 'eloquent'];
 
@@ -93,17 +96,16 @@ class Profiler
     $this->tpcc();
   }
 
-  private function seeding(string $group, int $recordCount)
+  private function seeding(string $orm, string $group, int $recordCount)
   {
     // e.g. preparing database for <<CRUD>> profiling with <<100>> records
-    $this->sentence("Seeding database with $recordCount records for $group ");
+    $this->sentence(strtoupper($orm) . '|' . strtoupper($group) . ": Seed $recordCount records");
 
     $dumpFilePath = './mysql-dump/' . $recordCount . '_' . $group . '.sql';
     $command = "mysql -u {$this->db_username} --password={$this->db_password} {$this->db} < {$dumpFilePath}";
     // $command = 'mysql -u ' . $this->db_username . ' --password=' . $this->db_password . ' ' . $this->db . ' < ' . $dumpFilePath;
 
     exec($command);
-    $this->sentence('Seeding done');
   }
 
   private function writeToFile(string $target, array $data)
@@ -116,7 +118,7 @@ class Profiler
 
   private function checkDirectoryExistence()
   {
-    $this->sentence('Checking required directories');
+    echo 'Checking required directories...';
     $directories = [
       'memory-profiling-result',
       'xdebug-profiling-result',
@@ -126,13 +128,12 @@ class Profiler
     ];
     foreach ($directories as $dir) {
       if (!file_exists($dir)) {
-        $this->sentence("    $dir is not found");
-        $this->sentence("    Creating $dir");
+        echo PHP_EOL . "    $dir is not found... CREATING... ";
         mkdir($dir);
-        $this->sentence("    $dir directory has been created");
+        echo "[DONE]" . PHP_EOL;
       }
     }
-    $this->sentence('Required directories check is done');
+    echo PHP_EOL;
   }
 
   private function getOutputFolder()
@@ -159,15 +160,15 @@ class Profiler
 
     // Turn on xdebug / memory logging when needed
     $this->specialSetupOn();
-
+    $groupLabel = strtoupper($group);
     foreach ($this->records as $record) {
       foreach ($this->orms as $orm) {
         // Each ORM get fresh record
-        $this->seeding($group, $record);
-
-        $this->sentence("Profiling {$group} group with {$record} database record");
-        $this->sentence("Running Apache Benchmark commands for {$orm} with {$this->n} iterations for each endpoint");
+        $this->seeding($orm, $group, $record);
+        $ormLabel = strtoupper($orm);
+        $this->sentence("Apache Benchmark, {$this->n} iteration(s)");
         foreach ($this->endpoints[$group] as $e) {
+          echo strtoupper($e['name']) . ' ';
           for ($i = 0; $i < $this->n; $i++) {
             $iterationNumber = $i + 1;
             $inputFileName = "inputs/{$group}.{$orm}.json";
@@ -187,15 +188,16 @@ class Profiler
             $command .= " > {$this->getOutputFolder()}/{$group}.{$record}.ab.{$e['name']}." . $orm . '-' . $i . ".txt";
 
             exec($command);
-            $this->sentence("Group: {$group}, Endpoint: {$e['name']}, iteration {$iterationNumber} done");
+            echo '.';
           }
-          $this->sentence('---');
+          echo '[DONE]' . PHP_EOL;
         }
+        echo PHP_EOL;
       }
 
-      $this->sentence("Profiling {$group} group with {$record} database record done");
+      echo "{$groupLabel} Profiling {$record} records... [DONE]" . PHP_EOL . PHP_EOL;
     }
-    $this->sentence("Profiling {$group} group done");
+    echo "{$groupLabel} Profiling... [DONE]" . PHP_EOL . PHP_EOL;
   }
 
   private function sentence(string $sentence = '')

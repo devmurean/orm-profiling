@@ -1,10 +1,8 @@
 <?php
 
-namespace App\Eloquent\Actions;
+namespace App\Doctrine\Actions;
 
 use Profiler\Instrumentation;
-
-require_once 'bootstrap.php';
 
 class Action
 {

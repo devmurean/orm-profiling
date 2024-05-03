@@ -7,10 +7,9 @@ use App\Doctrine\Helpers\ModelCollection;
 use App\Doctrine\Models\User;
 use App\Interface\ORMDriver;
 use App\Request;
-use Pecee\Http\Response;
 use Pecee\SimpleRouter\SimpleRouter;
 
-class CRUD implements ORMDriver
+class CRUD extends Action implements ORMDriver
 {
   public function create(array $data): mixed
   {

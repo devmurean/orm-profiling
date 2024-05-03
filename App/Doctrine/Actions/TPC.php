@@ -10,7 +10,7 @@ use App\Interface\ORMDriver;
 use App\Request;
 use Pecee\SimpleRouter\SimpleRouter;
 
-class TPC implements ORMDriver
+class TPC extends Action implements ORMDriver
 {
   public function create(array $data): mixed
   {

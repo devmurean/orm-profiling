@@ -28,7 +28,7 @@ $profiler = (new Profiler(
   xdebug: $isUsingXdebug,
   memory: $isProfilingMemory,
 ))->run();
-
+echo PHP_EOL . PHP_EOL;
 // Generate profiling report
 $mode = $isProfilingMemory ? 'memory' : 'load';
 $reader = (new Report($mode))->run();
