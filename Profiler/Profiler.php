@@ -57,10 +57,7 @@ class Profiler
   ];
 
   /** @var array Record count in related database table */
-  private array $records = [
-    100,
-    // 10 ** 3, 10 ** 4, 10 ** 5
-  ];
+  private array $records = [100, 10 ** 3, 10 ** 4, 10 ** 5];
 
   private array $orms = ['doctrine', 'eloquent'];
 
