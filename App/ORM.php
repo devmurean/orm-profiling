@@ -14,27 +14,27 @@ class ORM
     return new $className();
   }
   // TODO: change route to https://github.com/miladrahimi/phprouter
-  public static function create($orm, $group, $action, $data)
+  public static function create($orm, $group)
   {
-    return self::build($orm, $group)->create($data);
+    return self::build($orm, $group)->create();
   }
 
-  public static function read($orm, $group, $action)
+  public static function read($orm, $group)
   {
     return self::build($orm, $group)->read();
   }
 
-  public static function update($orm, $group, $action, $id, $data)
+  public static function update($orm, $group, $id)
   {
-    return self::build($orm, $group)->update($id, $data);
+    return self::build($orm, $group)->update($id);
   }
 
-  public static function delete($orm, $group, $action, $id)
+  public static function destroy($orm, $group, $id)
   {
-    return self::build($orm, $group)->delete($id);
+    return self::build($orm, $group)->destroy($id);
   }
 
-  public static function lookup($orm, $group, $action, $id)
+  public static function lookup($orm, $group, $id)
   {
     return self::build($orm, $group)->lookup($id);
   }

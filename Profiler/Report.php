@@ -277,6 +277,8 @@ class Report
   {
     if ($this->mode === 'memory') {
       $this->memoryReport();
+    } else if ($this->mode === 'xdebug') {
+      echo '';
     } else {
       $this->loadReport();
     }

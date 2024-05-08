@@ -11,7 +11,7 @@ use Pecee\SimpleRouter\SimpleRouter;
 
 class CRUD extends Action implements ORMDriver
 {
-  public function create(array $data): mixed
+  public function create(): mixed
   {
     try {
       $user = new User;
@@ -37,7 +37,7 @@ class CRUD extends Action implements ORMDriver
     )]);
   }
 
-  public function update(int $id, array $data): mixed
+  public function update(int $id): mixed
   {
     try {
       $em = EM::make();
@@ -55,7 +55,7 @@ class CRUD extends Action implements ORMDriver
     }
   }
 
-  public function delete(int $id): mixed
+  public function destroy(int $id): mixed
   {
     try {
       $em = EM::make();

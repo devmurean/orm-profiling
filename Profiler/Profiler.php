@@ -3,9 +3,9 @@
 namespace Profiler;
 
 use Closure;
-use Dotenv\Dotenv;
 use Faker\Factory;
 use Faker\Generator;
+use Symfony\Component\Dotenv\Dotenv;
 
 class Profiler
 {
@@ -14,37 +14,37 @@ class Profiler
   private array $endpoints = [
     // CRUD Group
     'crud' => [
-      ['method' => 'get', 'name' => 'read', 'value' => '/crud/read'],
-      ['method' => 'get', 'name' => 'lookup', 'value' => '/crud/lookup'],
-      ['method' => 'post', 'name' => 'create', 'value' => '/crud/create'],
-      ['method' => 'put', 'name' => 'update', 'value' => '/crud/update'],
+      // ['method' => 'get', 'name' => 'read', 'value' => '/crud/read'],
+      // ['method' => 'get', 'name' => 'lookup', 'value' => '/crud/lookup'],
+      // ['method' => 'post', 'name' => 'create', 'value' => '/crud/create'],
+      // ['method' => 'put', 'name' => 'update', 'value' => '/crud/update'],
       ['method' => 'delete', 'name' => 'delete', 'value' => '/crud/delete'],
     ],
 
     // ST Group
     'st' => [
-      ['method' => 'get', 'name' => 'read', 'value' => '/st/read'],
-      ['method' => 'get', 'name' => 'lookup', 'value' => '/st/lookup'],
-      ['method' => 'post', 'name' => 'create', 'value' => '/st/create'],
-      ['method' => 'put', 'name' => 'update', 'value' => '/st/update'],
+      // ['method' => 'get', 'name' => 'read', 'value' => '/st/read'],
+      // ['method' => 'get', 'name' => 'lookup', 'value' => '/st/lookup'],
+      // ['method' => 'post', 'name' => 'create', 'value' => '/st/create'],
+      // ['method' => 'put', 'name' => 'update', 'value' => '/st/update'],
       ['method' => 'delete', 'name' => 'delete', 'value' => '/st/delete'],
     ],
 
     // TPC Group
     'tpc' => [
-      ['method' => 'get', 'name' => 'read', 'value' => '/tpc/read'],
-      ['method' => 'get', 'name' => 'lookup', 'value' => '/tpc/lookup'],
-      ['method' => 'post', 'name' => 'create', 'value' => '/tpc/create'],
-      ['method' => 'put', 'name' => 'update', 'value' => '/tpc/update'],
+      // ['method' => 'get', 'name' => 'read', 'value' => '/tpc/read'],
+      // ['method' => 'get', 'name' => 'lookup', 'value' => '/tpc/lookup'],
+      // ['method' => 'post', 'name' => 'create', 'value' => '/tpc/create'],
+      // ['method' => 'put', 'name' => 'update', 'value' => '/tpc/update'],
       ['method' => 'delete', 'name' => 'delete', 'value' => '/tpc/delete'],
     ],
 
     // TPCC Group
     'tpcc' => [
-      ['method' => 'get', 'name' => 'read', 'value' => '/tpcc/read'],
-      ['method' => 'get', 'name' => 'lookup', 'value' => '/tpcc/lookup'],
-      ['method' => 'post', 'name' => 'create', 'value' => '/tpcc/create'],
-      ['method' => 'put', 'name' => 'update', 'value' => '/tpcc/update'],
+      // ['method' => 'get', 'name' => 'read', 'value' => '/tpcc/read'],
+      // ['method' => 'get', 'name' => 'lookup', 'value' => '/tpcc/lookup'],
+      // ['method' => 'post', 'name' => 'create', 'value' => '/tpcc/create'],
+      // ['method' => 'put', 'name' => 'update', 'value' => '/tpcc/update'],
       ['method' => 'delete', 'name' => 'delete', 'value' => '/tpcc/delete'],
     ],
 
@@ -57,7 +57,10 @@ class Profiler
   ];
 
   /** @var array Record count in related database table */
-  private array $records = [100, 10 ** 3, 10 ** 4, 10 ** 5];
+  private array $records = [
+    100,
+    // 10 ** 3, 10 ** 4, 10 ** 5
+  ];
 
   private array $orms = ['doctrine', 'eloquent'];
 
@@ -73,8 +76,8 @@ class Profiler
     private bool $xdebug = false,
     private bool $memory = false
   ) {
-    Dotenv::createUnsafeImmutable(__DIR__ . '/../')->load();
-
+    $dotenv = new Dotenv();
+    $dotenv->load(__DIR__ . '/../.env');
     $this->faker = Factory::create();
     $this->host = $_ENV['HOST'];
     $this->db = $_ENV['DB_NAME'];
@@ -87,6 +90,9 @@ class Profiler
 
   public function run()
   {
+    $this->checkDirectoryExistence();
+    // Turn on xdebug / memory logging when needed
+    $this->specialSetupOn();
     $this->crud();
     $this->st();
     $this->tpc();
@@ -133,6 +139,12 @@ class Profiler
     echo PHP_EOL;
   }
 
+  private function clearOutputFolder()
+  {
+    $command = 'rm ' . realpath('.') . '/' . $this->getOutputFolder() . '/*';
+    exec($command);
+  }
+
   private function getOutputFolder()
   {
     if ($this->memory) {
@@ -153,10 +165,8 @@ class Profiler
    */
   public function profile(string $group, array $data = []): void
   {
-    $this->checkDirectoryExistence();
+    // $this->clearOutputFolder();
 
-    // Turn on xdebug / memory logging when needed
-    $this->specialSetupOn();
     $groupLabel = strtoupper($group);
     foreach ($this->records as $record) {
       foreach ($this->orms as $orm) {
@@ -182,7 +192,10 @@ class Profiler
             $id = $i + 1;
             $command .= in_array($e['name'], ['lookup', 'update', 'delete']) ? "/{$id}" : '';
 
-            $command .= " > {$this->getOutputFolder()}/{$group}.{$record}.ab.{$e['name']}." . $orm . '-' . $i . ".txt";
+            // Nothing to write when profiling memory or using xdebug
+            if (!$this->memory && !$this->xdebug) {
+              $command .= " > {$this->getOutputFolder()}/{$group}.{$record}.ab.{$e['name']}." . $orm . '-' . $i . ".txt";
+            }
 
             exec($command);
             echo '.';

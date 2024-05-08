@@ -11,7 +11,7 @@ use Pecee\SimpleRouter\SimpleRouter;
 
 class TPC extends Action implements ORMDriver
 {
-  public function create(array $data): mixed
+  public function create(): mixed
   {
     try {
       DB::beginTransaction();
@@ -39,7 +39,7 @@ class TPC extends Action implements ORMDriver
     return SimpleRouter::response()->json(['employees' => EmployeeTPC::all()]);
   }
 
-  public function update(int $id, array $data): mixed
+  public function update(int $id): mixed
   {
     try {
       DB::beginTransaction();
@@ -48,7 +48,7 @@ class TPC extends Action implements ORMDriver
         'nik' => Request::input('nik'),
         'contract_duration' => null,
       ]);
-      $object->employment->name = $data['name'];
+      $object->employment->name = Request::input('name');
       $object->push();
       DB::commit();
       return SimpleRouter::response()->json(['object' => $object]);
@@ -58,7 +58,7 @@ class TPC extends Action implements ORMDriver
     }
   }
 
-  public function delete(int $id): mixed
+  public function destroy(int $id): mixed
   {
     try {
       DB::beginTransaction();

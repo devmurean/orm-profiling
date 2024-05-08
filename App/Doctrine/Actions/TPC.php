@@ -12,7 +12,7 @@ use Pecee\SimpleRouter\SimpleRouter;
 
 class TPC extends Action implements ORMDriver
 {
-  public function create(array $data): mixed
+  public function create(): mixed
   {
     try {
       $employee = new PermanentTPC;
@@ -38,7 +38,7 @@ class TPC extends Action implements ORMDriver
     )]);
   }
 
-  public function update(int $id, array $data): mixed
+  public function update(int $id): mixed
   {
     try {
       $em = EM::make();
@@ -55,7 +55,7 @@ class TPC extends Action implements ORMDriver
       return SimpleRouter::response()->json(['message' => $th->getMessage()]);
     }
   }
-  public function delete(int $id): mixed
+  public function destroy(int $id): mixed
   {
     try {
       $em = EM::make();
