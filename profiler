@@ -4,6 +4,7 @@ require realpath('.') . "/vendor/autoload.php";
 
 use Profiler\Profiler;
 use Profiler\Report;
+use Symfony\Component\Dotenv\Dotenv;
 
 /** @var array Command line options */
 $options = getopt('', ['n:', 'xdebug', 'memory', 'help']);
@@ -19,10 +20,11 @@ if (array_key_exists('help', $options) && $options['help'] === false) {
   return;
 }
 
+(new Dotenv())->load(__DIR__ . '/.env');
+
 // Do Profiling
 $isUsingXdebug = array_key_exists('xdebug', $options) ?? false;
 $isProfilingMemory = array_key_exists('memory', $options) ?? false;
-
 $profiler = (new Profiler(
   n: array_key_exists('n', $options) ? $options['n'] : 10,
   xdebug: $isUsingXdebug,
