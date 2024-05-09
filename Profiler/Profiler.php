@@ -5,7 +5,6 @@ namespace Profiler;
 use Closure;
 use Faker\Factory;
 use Faker\Generator;
-use Symfony\Component\Dotenv\Dotenv;
 
 class Profiler
 {
@@ -66,8 +65,6 @@ class Profiler
     private bool $xdebug = false,
     private bool $memory = false
   ) {
-    $dotenv = new Dotenv();
-    $dotenv->load(__DIR__ . '/../.env');
     $this->faker = Factory::create();
     $this->host = $_ENV['HOST'];
     $this->db = $_ENV['DB_NAME'];
@@ -111,7 +108,7 @@ class Profiler
 
   private function checkDirectoryExistence()
   {
-    echo 'Checking required directories...';
+    echo 'Checking required directories...' . PHP_EOL;
     $directories = [
       'memory-profiling-result',
       'xdebug-profiling-result',
@@ -121,8 +118,9 @@ class Profiler
     ];
     foreach ($directories as $dir) {
       if (!file_exists($dir)) {
-        echo PHP_EOL . "    $dir is not found... CREATING... ";
-        mkdir($dir);
+        echo "    $dir is not found... CREATING... ";
+        $command = "mkdir -m 777 $dir";
+        exec($command);
         echo "[DONE]" . PHP_EOL;
       }
     }
