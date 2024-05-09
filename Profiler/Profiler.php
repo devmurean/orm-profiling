@@ -14,53 +14,43 @@ class Profiler
   private array $endpoints = [
     // CRUD Group
     'crud' => [
-      // ['method' => 'get', 'name' => 'read', 'value' => '/crud/read'],
-      // ['method' => 'get', 'name' => 'lookup', 'value' => '/crud/lookup'],
-      // ['method' => 'post', 'name' => 'create', 'value' => '/crud/create'],
-      // ['method' => 'put', 'name' => 'update', 'value' => '/crud/update'],
-      ['method' => 'delete', 'name' => 'delete', 'value' => '/crud/delete'],
+      ['method' => 'get', 'name' => 'read', 'value' => '/crud/read'],
+      ['method' => 'get', 'name' => 'lookup', 'value' => '/crud/lookup'],
+      ['method' => 'post', 'name' => 'create', 'value' => '/crud/create'],
+      ['method' => 'put', 'name' => 'update', 'value' => '/crud/update'],
+      ['method' => 'post', 'name' => 'delete', 'value' => '/crud/delete'],
     ],
 
     // ST Group
     'st' => [
-      // ['method' => 'get', 'name' => 'read', 'value' => '/st/read'],
-      // ['method' => 'get', 'name' => 'lookup', 'value' => '/st/lookup'],
-      // ['method' => 'post', 'name' => 'create', 'value' => '/st/create'],
-      // ['method' => 'put', 'name' => 'update', 'value' => '/st/update'],
-      ['method' => 'delete', 'name' => 'delete', 'value' => '/st/delete'],
+      ['method' => 'get', 'name' => 'read', 'value' => '/st/read'],
+      ['method' => 'get', 'name' => 'lookup', 'value' => '/st/lookup'],
+      ['method' => 'post', 'name' => 'create', 'value' => '/st/create'],
+      ['method' => 'put', 'name' => 'update', 'value' => '/st/update'],
+      ['method' => 'post', 'name' => 'delete', 'value' => '/st/delete'],
     ],
 
     // TPC Group
     'tpc' => [
-      // ['method' => 'get', 'name' => 'read', 'value' => '/tpc/read'],
-      // ['method' => 'get', 'name' => 'lookup', 'value' => '/tpc/lookup'],
-      // ['method' => 'post', 'name' => 'create', 'value' => '/tpc/create'],
-      // ['method' => 'put', 'name' => 'update', 'value' => '/tpc/update'],
-      ['method' => 'delete', 'name' => 'delete', 'value' => '/tpc/delete'],
+      ['method' => 'get', 'name' => 'read', 'value' => '/tpc/read'],
+      ['method' => 'get', 'name' => 'lookup', 'value' => '/tpc/lookup'],
+      ['method' => 'post', 'name' => 'create', 'value' => '/tpc/create'],
+      ['method' => 'put', 'name' => 'update', 'value' => '/tpc/update'],
+      ['method' => 'post', 'name' => 'delete', 'value' => '/tpc/delete'],
     ],
 
     // TPCC Group
     'tpcc' => [
-      // ['method' => 'get', 'name' => 'read', 'value' => '/tpcc/read'],
-      // ['method' => 'get', 'name' => 'lookup', 'value' => '/tpcc/lookup'],
-      // ['method' => 'post', 'name' => 'create', 'value' => '/tpcc/create'],
-      // ['method' => 'put', 'name' => 'update', 'value' => '/tpcc/update'],
-      ['method' => 'delete', 'name' => 'delete', 'value' => '/tpcc/delete'],
+      ['method' => 'get', 'name' => 'read', 'value' => '/tpcc/read'],
+      ['method' => 'get', 'name' => 'lookup', 'value' => '/tpcc/lookup'],
+      ['method' => 'post', 'name' => 'create', 'value' => '/tpcc/create'],
+      ['method' => 'put', 'name' => 'update', 'value' => '/tpcc/update'],
+      ['method' => 'post', 'name' => 'delete', 'value' => '/tpcc/delete'],
     ],
-
-    // Propagation Group
-    // 'propagation' => [
-    //   ['method' => 'post', 'name' => 'create', 'value' => '/propagation/create'],
-    //   ['method' => 'post', 'name' => 'update', 'value' => '/propagation/update'],
-    //   ['method' => 'post', 'name' => 'delete', 'value' => '/propagation/delete'],
-    // ],
   ];
 
   /** @var array Record count in related database table */
-  private array $records = [
-    100,
-    // 10 ** 3, 10 ** 4, 10 ** 5
-  ];
+  private array $records = [100, 10 ** 3, 10 ** 4, 10 ** 5];
 
   private array $orms = ['doctrine', 'eloquent'];
 

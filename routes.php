@@ -20,7 +20,7 @@ SimpleRouter::get('/doctrine/{group}/lookup/{id}', function ($group, $id) {
   return ORM::lookup('doctrine', $group, $id);
 });
 
-SimpleRouter::delete('/doctrine/{group}/delete/{id}', function ($group, $id) {
+SimpleRouter::post('/doctrine/{group}/delete/{id}', function ($group, $id) {
   return ORM::destroy('doctrine', $group, $id);
 });
 
@@ -33,7 +33,7 @@ SimpleRouter::put('/eloquent/{group}/update/{id}', function ($group, $id) {
   return ORM::update('eloquent', $group, $id);
 });
 
-SimpleRouter::delete('/eloquent/{group}/delete/{id}', function ($group, $id) {
+SimpleRouter::post('/eloquent/{group}/delete/{id}', function ($group, $id) {
   return ORM::destroy('eloquent', $group, $id);
 });
 
