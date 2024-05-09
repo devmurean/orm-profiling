@@ -18,7 +18,7 @@ class CRUD extends Action implements ORMDriver
       $user->init(
         name: Request::input('name'),
         email: Request::input('email'),
-        password: password_hash("password", PASSWORD_DEFAULT)
+        password: "password"
       );
       $em = EM::make();
       $em->persist($user);

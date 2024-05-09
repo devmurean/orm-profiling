@@ -17,7 +17,7 @@ class CRUD extends Action implements ORMDriver
       $user = User::create([
         'name' => Request::input('name'),
         'email' => Request::input('email'),
-        'password' => password_hash("password", PASSWORD_DEFAULT)
+        'password' => "password"
       ]);
       DB::commit();
       return SimpleRouter::response()->json(['user' => $user]);
