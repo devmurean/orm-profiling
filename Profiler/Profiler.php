@@ -171,7 +171,7 @@ class Profiler
               $dataToWrite = $group === 'propagation' ? [] : $data[$orm][$i];
               $this->writeToFile($inputFileName, $dataToWrite);
             }
-            $command = 'ab -n 1 -c 1 ';
+            $command = 'ab -s 720 -n 1 -c 1 ';
             $command .= $e['method'] === 'post' ? '-p ' : '';
             $command .= $e['method'] === 'put' ? '-u ' : '';
             $command .= in_array($e['method'], ['post', 'put']) ? "{$inputFileName} -T application/json " : '';
