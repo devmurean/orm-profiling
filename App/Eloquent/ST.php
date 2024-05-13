@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Eloquent\Actions;
+namespace App\Eloquent;
 
 use App\Eloquent\Models\EmployeeST;
 use App\Interface\ORMDriver;

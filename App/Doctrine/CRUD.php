@@ -1,39 +1,38 @@
 <?php
 
-namespace App\Doctrine\Actions;
+namespace App\Doctrine;
 
 use App\Doctrine\EM;
 use App\Doctrine\Helpers\ModelCollection;
-use App\Doctrine\Models\EmployeeST;
+use App\Doctrine\Models\User;
 use App\Interface\ORMDriver;
 use App\Request;
 use Pecee\SimpleRouter\SimpleRouter;
 
-class ST extends Action implements ORMDriver
+class CRUD implements ORMDriver
 {
   public function create(): mixed
   {
     try {
-      $employee = new EmployeeST;
-      $employee->init(
+      $user = new User;
+      $user->init(
         name: Request::input('name'),
-        address: Request::input('address'),
-        nik: Request::input('nik'),
-        contract_duration: Request::input('contract_duration'),
+        email: Request::input('email'),
+        password: "password"
       );
       $em = EM::make();
-      $em->persist($employee);
+      $em->persist($user);
       $em->flush();
-
-      return SimpleRouter::response()->json(['employee' => $employee->serialize()]);
+      SimpleRouter::response()->json(['user' => $user->serialize()]);
     } catch (\Throwable $th) {
       return SimpleRouter::response()->json(['message' => $th->getMessage()]);
     }
   }
+
   public function read(): mixed
   {
-    return SimpleRouter::response()->json(['employees' => ModelCollection::serialize(
-      EM::make()->getRepository(EmployeeST::class)->findAll()
+    return SimpleRouter::response()->json(['users' => ModelCollection::serialize(
+      EM::make()->getRepository(User::class)->findAll()
     )]);
   }
 
@@ -41,17 +40,15 @@ class ST extends Action implements ORMDriver
   {
     try {
       $em = EM::make();
-      $employee = $em->find(EmployeeST::class, $id);
-      $employee->init(
+      $user = $em->find(User::class, $id);
+      $user->init(
         name: Request::input('name'),
-        address: Request::input('address'),
-        nik: $employee->nik,
-        contract_duration: $employee->contract_duration,
+        email: Request::input('email'),
+        password: $user->getPassword()
       );
-      $em->persist($employee);
+      $em->persist($user);
       $em->flush();
-
-      return SimpleRouter::response()->json(['employee' => $employee->serialize()]);
+      return SimpleRouter::response()->json(['user' => $user->serialize()]);
     } catch (\Throwable $th) {
       return SimpleRouter::response()->json(['message' => $th->getMessage()]);
     }
@@ -61,20 +58,18 @@ class ST extends Action implements ORMDriver
   {
     try {
       $em = EM::make();
-      $employee = $em->find(EmployeeST::class, $id);
-      $em->remove($employee);
+      $user = $em->find(User::class, $id);
+      $em->remove($user);
       $em->flush();
-
       return SimpleRouter::response()->json(['message' => 'OK']);
     } catch (\Throwable $th) {
       return SimpleRouter::response()->json(['message' => $th->getMessage()]);
     }
   }
-
   public function lookup(int $id): mixed
   {
     return SimpleRouter::response()->json([
-      'employee' => EM::make()->find(EmployeeST::class, $id)->serialize()
+      'user' => EM::make()->find(User::class, $id)->serialize(true)
     ]);
   }
 }

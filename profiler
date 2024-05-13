@@ -3,35 +3,7 @@
 require realpath('.') . "/vendor/autoload.php";
 
 use Profiler\Profiler;
-use Profiler\Report;
 use Symfony\Component\Dotenv\Dotenv;
 
-/** @var array Command line options */
-$options = getopt('', ['n:', 'xdebug', 'memory', 'help']);
-
-// Show options
-if (array_key_exists('help', $options) && $options['help'] === false) {
-  echo 'php profiler [commands] ' . PHP_EOL .
-    PHP_EOL . 'Commands:' . PHP_EOL .
-    '    [--n int]               Number of iteration in profiling.' . PHP_EOL .
-    '    [--memory bool]         (Optional) Include memory consumption in profiling' . PHP_EOL .
-    '    [--xdebug bool]       (Optional) Profile using Xdebug. Xdebug will be automatically activated' . PHP_EOL .
-    '    [--help]                Print help' . PHP_EOL;
-  return;
-}
-
 (new Dotenv())->load(__DIR__ . '/.env');
-
-// Do Profiling
-$isUsingXdebug = array_key_exists('xdebug', $options) ?? false;
-$isProfilingMemory = array_key_exists('memory', $options) ?? false;
-$profiler = (new Profiler(
-  n: array_key_exists('n', $options) ? $options['n'] : 10,
-  xdebug: $isUsingXdebug,
-  memory: $isProfilingMemory,
-))->run();
-echo PHP_EOL;
-// Generate profiling report
-$mode = $isProfilingMemory ? 'memory' : 'load';
-$mode = $isUsingXdebug ? 'xdebug' : $mode;
-$reader = (new Report($mode))->run();
+(new Profiler())->run();

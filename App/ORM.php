@@ -10,10 +10,10 @@ class ORM
   {
     $orm = ucfirst($orm);
     $group = strtoupper($group);
-    $className = "App\\$orm\\Actions\\$group";
+    $className = "App\\$orm\\$group";
     return new $className();
   }
-  // TODO: change route to https://github.com/miladrahimi/phprouter
+
   public static function create($orm, $group)
   {
     return self::build($orm, $group)->create();

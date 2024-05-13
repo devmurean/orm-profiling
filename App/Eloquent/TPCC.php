@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Eloquent\Actions;
+namespace App\Eloquent;
 
 use App\Eloquent\Models\EmployeeTPCC;
 use App\Eloquent\Models\PermanentTPCC;

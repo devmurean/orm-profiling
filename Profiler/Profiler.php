@@ -47,43 +47,35 @@ class Profiler
       ['method' => 'post', 'name' => 'delete', 'value' => '/tpcc/delete'],
     ],
   ];
-
-  /** @var array Record count in related database table */
-  private array $records = [100, 10 ** 3, 10 ** 4, 10 ** 5];
-
-  private array $orms = ['doctrine', 'eloquent'];
-
+  private array $records;
+  private array $orms;
   private string $host;
   private string $db;
   private string $db_username;
   private string $db_password;
+  private int $n = 1;
 
-  public function __construct(
-
-    /** @var int How many iteration a test is done */
-    private int $n,
-    private bool $xdebug = false,
-    private bool $memory = false
-  ) {
+  public function __construct()
+  {
     $this->faker = Factory::create();
     $this->host = $_ENV['HOST'];
     $this->db = $_ENV['DB_NAME'];
     $this->db_username = $_ENV['DB_USER'];
     $this->db_password = $_ENV['DB_PASSWORD'];
-    $this->n = $n;
-    $this->xdebug = $xdebug;
-    $this->memory = $memory;
+    $this->orms = explode(',', $_ENV['ORM']);
+    $this->records = explode(',', $_ENV['RECORD_COUNT']);
   }
 
   public function run()
   {
-    $this->checkDirectoryExistence();
-    // Turn on xdebug / memory logging when needed
-    $this->specialSetupOn();
+    $this->manageRequiredDirectories();
+    $this->emptyOutputDirectory();
+    $this->xdebugSetup(turnoff: false);
     $this->crud();
     $this->st();
     $this->tpc();
     $this->tpcc();
+    $this->xdebugSetup(turnoff: true);
   }
 
   private function seeding(string $orm, string $group, int $recordCount)
@@ -98,24 +90,12 @@ class Profiler
     exec($command);
   }
 
-  private function writeToFile(string $target, array $data)
-  {
-    $data = json_encode($data);
-    $f = fopen($target, 'w');
-    fwrite($f, $data);
-    fclose($f);
-  }
 
-  private function checkDirectoryExistence()
+
+  private function manageRequiredDirectories()
   {
     echo 'Checking required directories...' . PHP_EOL;
-    $directories = [
-      'memory-profiling-result',
-      'xdebug-profiling-result',
-      'load-profiling-result',
-      'inputs',
-      'reports'
-    ];
+    $directories = ['result', 'inputs'];
     foreach ($directories as $dir) {
       if (!file_exists($dir)) {
         echo "    $dir is not found... CREATING... ";
@@ -127,21 +107,15 @@ class Profiler
     echo PHP_EOL;
   }
 
-  private function clearOutputFolder()
+  private function emptyOutputDirectory()
   {
-    $command = 'rm ' . realpath('.') . '/' . $this->getOutputFolder() . '/*';
+    $command = 'rm ' . realpath('.') . '/' . $this->getOutputDirectory() . '/*';
     exec($command);
   }
 
-  private function getOutputFolder()
+  private function getOutputDirectory(): string
   {
-    if ($this->memory) {
-      return 'memory-profiling-result';
-    } elseif ($this->xdebug) {
-      return 'xdebug-profiling-result';
-    } else {
-      return 'load-profiling-result';
-    }
+    return $_ENV['OUTPUT_DIR_NAME'];
   }
 
   /**
@@ -153,49 +127,85 @@ class Profiler
    */
   public function profile(string $group, array $data = []): void
   {
-    // $this->clearOutputFolder();
-
     $groupLabel = strtoupper($group);
     foreach ($this->records as $record) {
       foreach ($this->orms as $orm) {
         // Each ORM get fresh record
         $this->seeding($orm, $group, $record);
-        $ormLabel = strtoupper($orm);
         $this->sentence("Apache Benchmark, {$this->n} iteration(s)");
         foreach ($this->endpoints[$group] as $e) {
           echo strtoupper($e['name']) . ' ';
-          for ($i = 0; $i < $this->n; $i++) {
-            $iterationNumber = $i + 1;
-            $inputFileName = "inputs/{$group}.{$orm}.json";
-            if (in_array($e['name'], ['update', 'create'])) {
-              $dataToWrite = $group === 'propagation' ? [] : $data[$orm][$i];
-              $this->writeToFile($inputFileName, $dataToWrite);
-            }
-            $command = 'ab -s 720 -n 1 -c 1 ';
-            $command .= $e['method'] === 'post' ? '-p ' : '';
-            $command .= $e['method'] === 'put' ? '-u ' : '';
-            $command .= in_array($e['method'], ['post', 'put']) ? "{$inputFileName} -T application/json " : '';
-            $command .= "{$this->host}/{$orm}{$e['value']}";
-            // Add record ID as route parameter
-            $id = $i + 1;
-            $command .= in_array($e['name'], ['lookup', 'update', 'delete']) ? "/{$id}" : '';
-
-            // Nothing to write when profiling memory or using xdebug
-            if (!$this->memory && !$this->xdebug) {
-              $command .= " > {$this->getOutputFolder()}/{$group}.{$record}.ab.{$e['name']}." . $orm . '-' . $i . ".txt";
-            }
-
-            exec($command);
-            echo '.';
-          }
+          $this->buildCommand($record, $orm, $group, $e, $data);
           echo '[DONE]' . PHP_EOL;
         }
         echo PHP_EOL;
       }
-
       echo "{$groupLabel} Profiling {$record} records... [DONE]" . PHP_EOL . PHP_EOL;
     }
     echo "{$groupLabel} Profiling... [DONE]" . PHP_EOL . PHP_EOL;
+  }
+
+  /**
+   * Build AB command
+   *
+   * @param integer $record Related record count in database
+   * @param string $orm
+   * @param string $group
+   * @param array $endpoint
+   * @param array $data
+   * @return void
+   */
+  private function buildCommand(
+    int $record,
+    string $orm,
+    string $group,
+    array $endpoint,
+    array $data
+  ): void {
+    $scriptTimeLimit = $_ENV['APACHE_BENCHMARK_SCRIPT_TIME_LIMIT'];
+    for ($iteration = 0; $iteration < $this->n; $iteration++) {
+      $inputFileName = $this->prepareInput($orm, $group, $endpoint, $iteration, $data);
+      $command = "ab -s {$scriptTimeLimit} -n 1 -c 1 ";
+      $command .= $endpoint['method'] === 'post' ? '-p ' : '';
+      $command .= $endpoint['method'] === 'put' ? '-u ' : '';
+      $command .= in_array($endpoint['method'], ['post', 'put']) ? "{$inputFileName} -T application/json " : '';
+      $command .= "{$this->host}/{$orm}{$endpoint['value']}";
+      // Add record ID as route parameter
+      $id = $iteration + 1;
+      $command .= in_array($endpoint['name'], ['lookup', 'update', 'delete']) ? "/{$id}" : '';
+      $command .= "?record={$record}";
+
+      exec($command);
+      echo '.';
+    }
+  }
+
+  /**
+   * Prepare json file as input for ab testing
+   *
+   * @param string $orm
+   * @param string $group
+   * @param array $endpoint
+   * @param integer $iteration
+   * @param array $data
+   * @return string Name of the newly created file
+   */
+  private function prepareInput(
+    string $orm,
+    string $group,
+    array $endpoint,
+    int $iteration,
+    array $data
+  ): string {
+    $inputFileName = "inputs/{$group}.{$orm}.json";
+    if (in_array($endpoint['name'], ['update', 'create'])) {
+      $data = $group === 'propagation' ? [] : $data[$orm][$iteration];
+      $encodedData = json_encode($data);
+      $f = fopen($inputFileName, 'w');
+      fwrite($f, $encodedData);
+      fclose($f);
+    }
+    return $inputFileName;
   }
 
   private function sentence(string $sentence = '')
@@ -257,11 +267,6 @@ class Profiler
     ]));
   }
 
-  public function propagation()
-  {
-    $this->profile('propagation');
-  }
-
   private function xdebugSetup(bool $turnoff = false)
   {
     $filename = $_ENV['XDEBUG_CONFIG_PATH'];
@@ -276,7 +281,7 @@ class Profiler
         $filelines[$key] = 'xdebug.mode=' . $mode . PHP_EOL;
       }
       if (str_contains($value, 'xdebug.output_dir')) {
-        $dir = realpath('./xdebug-profiling-result');
+        $dir = realpath("./{$this->getOutputDirectory()}");
         $filelines[$key] = 'xdebug.output_dir=' . $dir . PHP_EOL;
       }
     }
@@ -284,40 +289,5 @@ class Profiler
     $newContent = implode('', $filelines);
     file_put_contents($filename, $newContent);
     exec('sudo systemctl restart apache2');
-  }
-
-  private function memoryLoggingSetup(bool $turnoff = false)
-  {
-    $filename = getcwd() . '/.env';
-    $filelines = file($filename);
-    $matches  = preg_grep('/^(LOG_MEMORY_USAGE)/', $filelines);
-
-    foreach ($matches as $key => $value) {
-      if (str_contains($value, 'LOG_MEMORY_USAGE')) {
-        $mode = $turnoff ? 'false' : 'true';
-        $filelines[$key] = 'LOG_MEMORY_USAGE=' . $mode . PHP_EOL;
-      }
-    }
-
-    $newContent = implode('', $filelines);
-    file_put_contents($filename, $newContent);
-  }
-
-  private function specialSetupOn()
-  {
-    $this->specialSetupOff();
-    if ($this->xdebug) {
-      $this->xdebugSetup();
-    }
-
-    if ($this->memory) {
-      $this->memoryLoggingSetup();
-    }
-  }
-
-  private function specialSetupOff()
-  {
-    $this->xdebugSetup(turnoff: true);
-    $this->memoryLoggingSetup(turnoff: true);
   }
 }

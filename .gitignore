@@ -27,6 +27,6 @@ Homestead.json
 /xdebug-profiling-result/*
 /scanned-load-result.txt
 /inputs/*
-/reports/*
+/result/*
 logs/*
 /doctrine_metadata/*

@@ -3,7 +3,6 @@
 namespace App\Doctrine;
 
 use Doctrine\DBAL\DriverManager;
-use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMSetup;
 use Symfony\Component\Cache\Adapter\PhpFilesAdapter;
@@ -16,6 +15,7 @@ class EM
       paths: array(realpath('.') . '/App/Doctrine/Models'),
       isDevMode: false
     );
+
     $cache = new PhpFilesAdapter('doctrine_metadata', 0, getcwd());
     $config->setMetadataCache($cache);
 
