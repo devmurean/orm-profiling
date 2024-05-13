@@ -31,8 +31,7 @@ class CRUD extends Action implements ORMDriver
 
   public function read(): mixed
   {
-    header("Content-Type: application/json");
-    echo SimpleRouter::response()->json(['users' => ModelCollection::serialize(
+    return SimpleRouter::response()->json(['users' => ModelCollection::serialize(
       EM::make()->getRepository(User::class)->findAll()
     )]);
   }
