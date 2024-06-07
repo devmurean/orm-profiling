@@ -4,26 +4,28 @@ namespace App\Doctrine;
 
 use App\Doctrine\EM;
 use App\Doctrine\Helpers\ModelCollection;
-use App\Doctrine\Models\User;
+use App\Doctrine\Models\EmployeeTPC;
+use App\Doctrine\Models\PermanentTPC;
 use App\Interface\ORMDriver;
 use App\Request;
 use Pecee\SimpleRouter\SimpleRouter;
 
-class CRUD implements ORMDriver
+class AdditionalNullValue implements ORMDriver
 {
   public function create(): mixed
   {
     try {
-      $user = new User;
-      $user->init(
+      $employee = new PermanentTPC;
+      $employee->init(
         name: Request::input('name'),
-        email: Request::input('email'),
-        password: "password"
+        address: Request::input('address'),
+        nik: Request::input('nik'),
       );
       $em = EM::make();
-      $em->persist($user);
+      $em->persist($employee);
       $em->flush();
-      SimpleRouter::response()->json(['user' => $user->serialize()]);
+
+      return SimpleRouter::response()->json(['employee' => $employee->serialize()]);
     } catch (\Throwable $th) {
       return SimpleRouter::response()->json(['message' => $th->getMessage()]);
     }
@@ -31,8 +33,8 @@ class CRUD implements ORMDriver
 
   public function read(): mixed
   {
-    return SimpleRouter::response()->json(['users' => ModelCollection::serialize(
-      EM::make()->getRepository(User::class)->findAll()
+    return SimpleRouter::response()->json(['employees' => ModelCollection::serialize(
+      EM::make()->getRepository(EmployeeTPC::class)->findAll()
     )]);
   }
 
@@ -40,26 +42,25 @@ class CRUD implements ORMDriver
   {
     try {
       $em = EM::make();
-      $user = $em->find(User::class, $id);
-      $user->init(
+      $employee = $em->find(EmployeeTPC::class, $id);
+      $employee->init(
         name: Request::input('name'),
-        email: Request::input('email'),
-        password: $user->getPassword()
+        address: Request::input('address'),
+        nik: $employee->nik,
       );
-      $em->persist($user);
+      $em->persist($employee);
       $em->flush();
-      return SimpleRouter::response()->json(['user' => $user->serialize()]);
+      return SimpleRouter::response()->json(['employee' => $employee->serialize()]);
     } catch (\Throwable $th) {
       return SimpleRouter::response()->json(['message' => $th->getMessage()]);
     }
   }
-
   public function destroy(int $id): mixed
   {
     try {
       $em = EM::make();
-      $user = $em->find(User::class, $id);
-      $em->remove($user);
+      $employee = $em->find(EmployeeTPC::class, $id);
+      $em->remove($employee);
       $em->flush();
       return SimpleRouter::response()->json(['message' => 'OK']);
     } catch (\Throwable $th) {
@@ -69,7 +70,7 @@ class CRUD implements ORMDriver
   public function lookup(int $id): mixed
   {
     return SimpleRouter::response()->json([
-      'user' => EM::make()->find(User::class, $id)->serialize(true)
+      'employee' => EM::make()->find(EmployeeTPC::class, $id)->serialize()
     ]);
   }
 }

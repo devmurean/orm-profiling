@@ -6,36 +6,38 @@ use App\Interface\ORMDriver;
 
 class ORM
 {
-  private static function build(string $orm, string $group): ORMDriver
+  private static function build(string $orm, string $metric): ORMDriver
   {
     $orm = ucfirst($orm);
-    $group = strtoupper($group);
-    $className = "App\\$orm\\$group";
+    $metric = str_replace('-', ' ', $metric);
+    $metric = ucwords($metric);
+    $metric = str_replace(' ', '', $metric);
+    $className = "App\\$orm\\$metric";
     return new $className();
   }
 
-  public static function create($orm, $group)
+  public static function create($orm, $metric)
   {
-    return self::build($orm, $group)->create();
+    return self::build($orm, $metric)->create();
   }
 
-  public static function read($orm, $group)
+  public static function read($orm, $metric)
   {
-    return self::build($orm, $group)->read();
+    return self::build($orm, $metric)->read();
   }
 
-  public static function update($orm, $group, $id)
+  public static function update($orm, $metric, $id)
   {
-    return self::build($orm, $group)->update($id);
+    return self::build($orm, $metric)->update($id);
   }
 
-  public static function destroy($orm, $group, $id)
+  public static function destroy($orm, $metric, $id)
   {
-    return self::build($orm, $group)->destroy($id);
+    return self::build($orm, $metric)->destroy($id);
   }
 
-  public static function lookup($orm, $group, $id)
+  public static function lookup($orm, $metric, $id)
   {
-    return self::build($orm, $group)->lookup($id);
+    return self::build($orm, $metric)->lookup($id);
   }
 }

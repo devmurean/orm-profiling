@@ -8,7 +8,7 @@ use App\Request;
 use Illuminate\Database\Capsule\Manager as DB;
 use Pecee\SimpleRouter\SimpleRouter;
 
-class ST extends Action implements ORMDriver
+class PolymorphicQuery extends Action implements ORMDriver
 {
   public function create(): mixed
   {

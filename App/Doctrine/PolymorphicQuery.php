@@ -9,7 +9,7 @@ use App\Interface\ORMDriver;
 use App\Request;
 use Pecee\SimpleRouter\SimpleRouter;
 
-class ST implements ORMDriver
+class PolymorphicQuery implements ORMDriver
 {
   public function create(): mixed
   {

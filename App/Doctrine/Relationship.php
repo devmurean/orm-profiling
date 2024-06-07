@@ -4,28 +4,26 @@ namespace App\Doctrine;
 
 use App\Doctrine\EM;
 use App\Doctrine\Helpers\ModelCollection;
-use App\Doctrine\Models\EmployeeTPC;
-use App\Doctrine\Models\PermanentTPC;
+use App\Doctrine\Models\User;
 use App\Interface\ORMDriver;
 use App\Request;
 use Pecee\SimpleRouter\SimpleRouter;
 
-class TPC implements ORMDriver
+class Relationship implements ORMDriver
 {
   public function create(): mixed
   {
     try {
-      $employee = new PermanentTPC;
-      $employee->init(
+      $user = new User;
+      $user->init(
         name: Request::input('name'),
-        address: Request::input('address'),
-        nik: Request::input('nik'),
+        email: Request::input('email'),
+        password: "password"
       );
       $em = EM::make();
-      $em->persist($employee);
+      $em->persist($user);
       $em->flush();
-
-      return SimpleRouter::response()->json(['employee' => $employee->serialize()]);
+      SimpleRouter::response()->json(['user' => $user->serialize()]);
     } catch (\Throwable $th) {
       return SimpleRouter::response()->json(['message' => $th->getMessage()]);
     }
@@ -33,8 +31,8 @@ class TPC implements ORMDriver
 
   public function read(): mixed
   {
-    return SimpleRouter::response()->json(['employees' => ModelCollection::serialize(
-      EM::make()->getRepository(EmployeeTPC::class)->findAll()
+    return SimpleRouter::response()->json(['users' => ModelCollection::serialize(
+      EM::make()->getRepository(User::class)->findAll()
     )]);
   }
 
@@ -42,25 +40,26 @@ class TPC implements ORMDriver
   {
     try {
       $em = EM::make();
-      $employee = $em->find(EmployeeTPC::class, $id);
-      $employee->init(
+      $user = $em->find(User::class, $id);
+      $user->init(
         name: Request::input('name'),
-        address: Request::input('address'),
-        nik: $employee->nik,
+        email: Request::input('email'),
+        password: $user->getPassword()
       );
-      $em->persist($employee);
+      $em->persist($user);
       $em->flush();
-      return SimpleRouter::response()->json(['employee' => $employee->serialize()]);
+      return SimpleRouter::response()->json(['user' => $user->serialize()]);
     } catch (\Throwable $th) {
       return SimpleRouter::response()->json(['message' => $th->getMessage()]);
     }
   }
+
   public function destroy(int $id): mixed
   {
     try {
       $em = EM::make();
-      $employee = $em->find(EmployeeTPC::class, $id);
-      $em->remove($employee);
+      $user = $em->find(User::class, $id);
+      $em->remove($user);
       $em->flush();
       return SimpleRouter::response()->json(['message' => 'OK']);
     } catch (\Throwable $th) {
@@ -70,7 +69,7 @@ class TPC implements ORMDriver
   public function lookup(int $id): mixed
   {
     return SimpleRouter::response()->json([
-      'employee' => EM::make()->find(EmployeeTPC::class, $id)->serialize()
+      'user' => EM::make()->find(User::class, $id)->serialize(true)
     ]);
   }
 }
