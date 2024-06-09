@@ -5,5 +5,8 @@ require realpath('.') . "/vendor/autoload.php";
 use Profiler\Profiler;
 use Symfony\Component\Dotenv\Dotenv;
 
+/** @var array Command line options */
+$options = getopt('', ['n:']);
+$iterations = array_key_exists('n', $options) ? $options['n'] : 1;
 (new Dotenv())->load(__DIR__ . '/.env');
-(new Profiler())->run();
+(new Profiler($iterations))->run();

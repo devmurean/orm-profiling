@@ -1,6 +1,6 @@
 <?php
 
-namespace Profiler\Input;
+namespace Profiler\Inputs;
 
 use Closure;
 

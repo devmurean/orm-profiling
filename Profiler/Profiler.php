@@ -2,6 +2,8 @@
 
 namespace Profiler;
 
+use Profiler\Inputs\InputFactory;
+
 class Profiler
 {
   private array $records;
@@ -10,10 +12,10 @@ class Profiler
   private array $operations;
   private string $host;
 
-  public function __construct(private int $n = 1)
+  public function __construct(private int|null $n = 1)
   {
     $this->host = $_ENV['HOST'];
-    $this->orms = explode(',', $_ENV['ORM']);
+    $this->orms = explode(',', $_ENV['ORMS']);
     $this->records = explode(',', $_ENV['RECORD_COUNT']);
     $this->metrics = explode(',', $_ENV['METRICS']);
     $this->operations = explode(',', $_ENV['OPERATIONS']);
@@ -41,24 +43,22 @@ class Profiler
     foreach ($this->metrics as $metric) {
       // ORM
       foreach ($this->orms as $orm) {
-        $metricLabel = strtoupper($metric);
-        $ormLabel = strtoupper($orm);
-        echo "Profiling {$metricLabel} Metric | {$ormLabel}..." . PHP_EOL;
         // Number of records
         foreach ($this->records as $numberOfRecords) {
-          echo "  Against {$numberOfRecords} records, {$this->n} iteration(s)..." . PHP_EOL;
+          $metricLabel = strtoupper($metric);
+          $ormLabel = strtoupper($orm);
+          echo "{$ormLabel}|{$metricLabel}: {$numberOfRecords} records, {$this->n} iteration(s)..." . PHP_EOL;
           // Seeding: Each ORM get fresh record
           (new DatabaseSeeder($orm, $metric, $numberOfRecords))->run();
           // Operations
           foreach ($this->operations as $operation) {
             $operationLabel = strtoupper($operation);
-            echo "    {$operationLabel} Operation ";
+            echo "Profiling {$operationLabel} Operation ";
             $this->ab($numberOfRecords, $orm, $metric, $operation);
             echo '[DONE]' . PHP_EOL;
           }
-          echo '  [DONE]' . PHP_EOL;
         }
-        echo '[DONE]' . PHP_EOL;
+        echo PHP_EOL;
       }
     }
   }
@@ -84,7 +84,7 @@ class Profiler
     for ($iteration = 0; $iteration < $this->n; $iteration++) {
       $isHttpMethodPost = in_array($operation, ['create', 'delete']);
       $isHttpMethodPut = $operation === 'update';
-      $isNeedInput = in_array($operation, ['create', 'update']);
+      $isNeedInput = in_array($operation, ['create', 'update', 'delete']);
 
       $command = "ab -s {$scriptTimeLimit} -n 1 -c 1 ";
       $command .= $isHttpMethodPost ? '-p ' : '';
@@ -95,7 +95,7 @@ class Profiler
         $command .= "{$input->getFileName()} -T application/json ";
       }
 
-      $command .= "{$this->host}/{$orm}/{$operation}";
+      $command .= "{$this->host}/{$orm}/{$metric}/{$operation}";
       // Add record ID as route parameter
       $id = $iteration + 1;
       $command .= in_array($operation, ['lookup', 'update', 'delete']) ? "/{$id}" : '';

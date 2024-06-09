@@ -27,8 +27,6 @@ class DatabaseSeeder
 
     $dumpFilePath = "./{$this->getDumpFileDir()}/{$this->metric}_{$this->numberOfRecords}.sql";
     $this->importSQL($dumpFilePath);
-
-    echo "[DONE]";
   }
 
   private function importSQL(string $filePath): void

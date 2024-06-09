@@ -1,9 +1,9 @@
 <?php
 
-namespace Profiler;
+namespace Profiler\Inputs;
 
 use Closure;
-use Profiler\Input\InputInterface;
+use Profiler\Inputs\InputInterface;
 
 /**
  * Handle Input creation using Faker library
@@ -12,7 +12,6 @@ class InputFactory
 {
   private string $fileName;
   private string $metric;
-  private string $operation;
 
   public function getFileName(): string
   {
@@ -22,7 +21,7 @@ class InputFactory
   public function build(string $metric): void
   {
     $this->metric = $metric;
-    $this->fileName = realpath('.') . "/input/{$this->metric}.json";
+    $this->fileName = realpath('.') . "/inputs/{$this->metric}.json";
 
     $data = $this->blueprint($this->metric)();
     $encodedData = json_encode($data);
