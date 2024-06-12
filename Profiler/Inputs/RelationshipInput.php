@@ -19,9 +19,7 @@ class RelationshipInput implements InputInterface
   {
     return fn () => [
       'name' => $this->faker->name,
-      'address' => $this->faker->address,
-      'nik' => rand(10 ** 5, 10 ** 6 - 1),
-      'contract_duration' => 1,
+      'email' => $this->faker->safeEmail,
     ];
   }
 }
