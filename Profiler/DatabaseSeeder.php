@@ -20,12 +20,10 @@ class DatabaseSeeder
 
   public function run(): void
   {
-    $ormName = strtoupper($this->orm);
-    $metricName = strtoupper($this->metric);
-
-    echo "{$ormName}|{$metricName}: Seed {$this->numberOfRecords} records..." . PHP_EOL;
-
     $dumpFilePath = "./{$this->getDumpFileDir()}/{$this->metric}_{$this->numberOfRecords}.sql";
+
+    echo "Seeding {$this->numberOfRecords} records ({$dumpFilePath})...";
+
     $this->importSQL($dumpFilePath);
   }
 
