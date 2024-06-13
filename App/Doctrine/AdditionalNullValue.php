@@ -46,7 +46,7 @@ class AdditionalNullValue implements ORMDriver
         name: Request::input('name'),
         address: Request::input('address'),
         nik: Request::input('nik'),
-        contract_duration: $employee->getContractDuration(),
+        contract_duration: Request::input('contract_duration'),
       );
       $em->persist($employee);
       $em->flush();
