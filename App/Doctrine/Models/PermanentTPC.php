@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Doctrine\Models;
 
 use Doctrine\ORM\Mapping\Column;
@@ -10,20 +11,20 @@ use Doctrine\ORM\Mapping\Table;
 #[Table('permanent_tpc')]
 class PermanentTPC extends EmployeeTPC
 {
-    #[Column()]
-    private string $nik;
+  #[Column()]
+  protected string $nik;
 
-    public function serialize(): array
-    {
-        return array_merge(parent::serialize(), [
-            'nik' => $this->nik
-        ]);
-    }
+  public function serialize(): array
+  {
+    return array_merge(parent::serialize(), [
+      'nik' => $this->nik
+    ]);
+  }
 
-    public function init($name, $address, $nik): void
-    {
-        $this->name = $name;
-        $this->address = $address;
-        $this->nik = $nik;
-    }
+  public function init($name, $address, $nik): void
+  {
+    $this->name = $name;
+    $this->address = $address;
+    $this->nik = $nik;
+  }
 }
