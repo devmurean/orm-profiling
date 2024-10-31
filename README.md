@@ -22,7 +22,7 @@ The commands that used in this section is intended to work in linux environment.
 git clone https://github.com/devmurean/orm-profiling
 ```
 
-2. Open the directory and install required packages using componser
+2. Open the directory and install required packages using composer
 
 ```
 cd orm-profiling
@@ -30,41 +30,27 @@ composer install
 ```
 
 3. Prepare a MySQL database
-4. Copy .env.example dan rename it to .env
+4. Copy `.env.example` dan rename it to `.env`
 
 ```
 cp .env.example .env
 ```
 
 5. Fill up the values in `.env`. The items is self explanatory or has explanation comment attached
-6. `XDEBUG_CONFIG_PATH` can be different depends on OS.
 
 ## Profiling
 
-### Help
+### Single Iteration
 
 ```
-php profiler --help
+sudo php profiler
 ```
 
-### Execution Duration
-
+### Multiple Iteration
 ```
-sudo php profiler --n=10
-```
-
-### Memory Consumption
-
-```
-sudo php profiler --n=10 --memory"
+sudo php profiler --n=10 "
 ```
 
-### Xdebug
+## Profiling Result
 
-```
-sudo php profiler --n=1 --xdebug"
-```
-
-## Profiling Report
-
-Report is automatically stored in `reports` directory as CSV and also displayed in monitor. Report only be generated for execution duration and memory consumption profiling. For Xdebug, its results can be visualized using [KCachegrind](https://kcachegrind.github.io/html/Download.html) or related tools.
+Profiling results is automatically stored in `results`. The results can be visualized using [KCachegrind](https://kcachegrind.github.io/html/Download.html) or similar tools.
