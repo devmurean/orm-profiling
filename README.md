@@ -6,7 +6,7 @@ Doctrine and Eloquent (name of ORM product) is chosen as sample since each of th
 
 There are three main parts: `App` directory, `Profiler` directory, and `profiler` file.
 
-`App` directory contains ORM implementations. `Profiler` directory contains instrumentations that dictate how profiling process is done. `profiler` file acted as command line interface.
+`App` directory contains ORM implementations. `Profiler` directory contains instrumentations that dictate how profiling process is done. `profiler` is a script that automate profiling process. The `profiler` script must be executed with `sudo` or admin privilege.
 
 ## Prequisite
 
@@ -14,7 +14,7 @@ Apache Server, PHP 8.2, MySQL, composer, xdebug, and git must be installed. For 
 
 ## Installation
 
-The commands that used in this section is intended to work in linux environment. For Windows and Mac, please use equivalent commands.
+The commands that used in this section is intended to work in linux environment. For Windows or Mac, please use equivalent commands.
 
 1. Clone the repository from github.com
 
@@ -48,9 +48,9 @@ sudo php profiler
 
 ### Multiple Iteration
 ```
-sudo php profiler --n=10 "
+sudo php profiler --n=10
 ```
 
 ## Profiling Result
 
-Profiling results is automatically stored in `results`. The results can be visualized using [KCachegrind](https://kcachegrind.github.io/html/Download.html) or similar tools.
+Profiling results is automatically stored in `results` (default name). The results can be visualized using [KCachegrind](https://kcachegrind.github.io/html/Download.html) or similar tools.
